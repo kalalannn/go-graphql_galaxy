@@ -1,0 +1,36 @@
+type Character {
+  id: ID!
+  name: String!
+  gender: String
+  ability: String!
+  minimal_distance: Float!
+  weight: Float
+  born: String!
+  in_space_since: String
+  beer_consumption: Int!
+  knows_the_answer: Boolean!
+  nemeses: [Nemesis!]!
+}
+
+type Nemesis {
+  id: ID!
+  is_alive: Boolean!
+  years: Int
+  character: Character!
+  secrets: [Secret!]!
+}
+
+scalar Int64
+
+type Secret {
+  id: ID!
+  secret_code: Int64!
+  nemesis: Nemesis!
+}
+
+type Query {
+  characters: [Character!]!
+  character(id: ID!): Character
+  nemeses: [Nemesis!]!
+  secret(id: ID!): Secret
+}

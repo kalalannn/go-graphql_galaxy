@@ -9,6 +9,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Server struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
+}
+
 type Database struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
@@ -21,6 +26,7 @@ type Database struct {
 
 type Config struct {
 	Env      string `yaml:"env"`
+	Server   `yaml:"server"`
 	Database `yaml:"database"`
 }
 

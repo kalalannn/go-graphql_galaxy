@@ -81,22 +81,22 @@ func Init(env string) {
 }
 
 func Debug(msg string, args ...interface{}) {
-	logger.Debug(msg, args...)
+	logger.Debug(fmt.Sprintf(msg, args...))
 }
 
 func Info(msg string, args ...interface{}) {
-	logger.Info(msg, args...)
+	logger.Info(fmt.Sprintf(msg, args...))
 }
 
 func Warn(msg string, args ...interface{}) {
-	logger.Warn(msg, args...)
+	logger.Warn(fmt.Sprintf(msg, args...))
 }
 
 func Error(msg string, args ...interface{}) {
-	logger.Error(msg, args...)
+	logger.Error(fmt.Sprintf(msg, args...))
 }
 
 func Fatal(msg string, args ...interface{}) {
-	logger.Error(msg, args...)
+	logger.Error(fmt.Sprintf(msg, args...))
 	os.Exit(1)
 }

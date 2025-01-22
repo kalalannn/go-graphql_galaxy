@@ -19,5 +19,14 @@ psql_galaxy:
 dump_galaxy:
 	pg_dump $(galaxy_conn_string) --exclude-table-data='*_id_seq' -f sql/db_dump.sql
 
-run:
-	go run cmd/app/main.go
+build:
+	mkdir -p bin
+	go build -o bin/server cmd/server/main.go
+
+run: build
+	./bin/server
+
+generate:
+	go run cmd/generate/main.go
+# go get github.com/99designs/gqlgen
+# go run github.com/99designs/gqlgen generate
