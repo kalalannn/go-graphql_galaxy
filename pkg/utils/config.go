@@ -10,8 +10,12 @@ import (
 )
 
 type Server struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
+	Host               string `yaml:"host"`
+	Port               string `yaml:"port"`
+	UsePlayground      bool   `yaml:"use_playground"`
+	UseIntrospection   bool   `yaml:"use_introspection"`
+	GQLComplexityLimit int    `yaml:"gql_complexity_limit"`
+	GQLDepthLimit      int    `yaml:"gql_depth_limit"`
 }
 
 type Database struct {

@@ -1,4 +1,4 @@
-package graph
+package resolvers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -7,8 +7,9 @@ package graph
 import (
 	"context"
 	"fmt"
-	"go-graphql_galaxy/graph/model"
+	"go-graphql_galaxy/internal/graph/model"
 	"go-graphql_galaxy/internal/models"
+	"go-graphql_galaxy/internal/schema"
 	"time"
 )
 
@@ -57,7 +58,7 @@ func (r *queryResolver) Secret(ctx context.Context, id uint) (*model.Secret, err
 	panic(fmt.Errorf("not implemented: Secret - secret"))
 }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Query returns schema.QueryResolver implementation.
+func (r *Resolver) Query() schema.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
