@@ -1,8 +1,8 @@
 package server
 
 import (
-	"go-graphql_galaxy/internal/resolvers"
-	"go-graphql_galaxy/internal/schema"
+	"go-graphql_galaxy/internal/graphql/generated"
+	"go-graphql_galaxy/internal/graphql/resolvers"
 	"go-graphql_galaxy/pkg/log"
 	"go-graphql_galaxy/pkg/utils"
 	"net/http"
@@ -50,7 +50,7 @@ func (s *ServerService) RunServer() error {
 }
 
 func (s *ServerService) NewGraphQLHandler() *handler.Server {
-	srv := handler.New(schema.NewExecutableSchema(schema.Config{Resolvers: &resolvers.Resolver{
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
 		DB: s.DB,
 	}}))
 

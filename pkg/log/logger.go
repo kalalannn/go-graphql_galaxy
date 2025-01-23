@@ -80,6 +80,10 @@ func Init(env string) {
 	slog.SetDefault(logger)
 }
 
+func Debugln(args ...interface{}) {
+	logger.Debug(fmt.Sprintln(args...))
+}
+
 func Debug(msg string, args ...interface{}) {
 	logger.Debug(fmt.Sprintf(msg, args...))
 }

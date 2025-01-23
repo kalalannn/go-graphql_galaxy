@@ -1,0 +1,13 @@
+
+type Nemesis {
+  id: ID!
+  is_alive: Boolean!
+  years: Int
+  character: Character!
+  secrets: [Secret!]!
+}
+
+extend type Query {
+  nemeses: [Nemesis!]!
+  nemesis(id: ID!): Nemesis
+}

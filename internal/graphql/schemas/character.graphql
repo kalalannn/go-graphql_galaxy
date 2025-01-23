@@ -1,3 +1,10 @@
+# directive @goModel(
+# 	model: String
+# 	models: [String!]
+# 	forceGenerate: Boolean
+# ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+# type Character @goModel(model: "models.Character") {
 type Character {
   id: ID!
   name: String!
@@ -12,25 +19,7 @@ type Character {
   nemeses: [Nemesis!]!
 }
 
-type Nemesis {
-  id: ID!
-  is_alive: Boolean!
-  years: Int
-  character: Character!
-  secrets: [Secret!]!
-}
-
-scalar Int64
-
-type Secret {
-  id: ID!
-  secret_code: Int64!
-  nemesis: Nemesis!
-}
-
-type Query {
+extend type Query {
   characters: [Character!]!
   character(id: ID!): Character
-  nemeses: [Nemesis!]!
-  secret(id: ID!): Secret
 }

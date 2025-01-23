@@ -28,6 +28,9 @@ build: bin_exists
 run: build
 	./bin/server
 
+live:
+	CompileDaemon -build="make build" -command="./bin/server"
+
 build_generate: bin_exists
 	go build -o bin/generate cmd/generate/main.go
 
