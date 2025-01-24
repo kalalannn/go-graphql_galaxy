@@ -68,6 +68,8 @@ func (s *ServerService) NewGraphQLHandler() *handler.Server {
 
 	srv.Use(extension.FixedComplexityLimit(s.Config.GQLComplexityLimit))
 
+	srv.Use(NewDepthExtension(s.Config.GQLDepthLimit))
+
 	//! TODO add depth limit + rate limit + middleware
 
 	// req -> resp(to_cache) + id ; id -> req(cached) -> resp

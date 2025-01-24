@@ -1,6 +1,11 @@
 package resolvers
 
-import "gorm.io/gorm"
+import (
+	"context"
+	"go-graphql_galaxy/internal/gqlcontext"
+
+	"gorm.io/gorm"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +13,8 @@ import "gorm.io/gorm"
 
 type Resolver struct {
 	DB *gorm.DB
+}
+
+func GetPreloads(ctx context.Context) [][]string {
+	return ctx.Value(gqlcontext.PreloadContextKey).([][]string)
 }

@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"go-graphql_galaxy/internal/gorm/services"
 	"go-graphql_galaxy/internal/graphql/models"
 	"go-graphql_galaxy/internal/transformers"
@@ -14,16 +13,18 @@ import (
 
 // Nemeses is the resolver for the nemeses field.
 func (r *queryResolver) Nemeses(ctx context.Context) ([]*models.Nemesis, error) {
-	nemesisService := services.NewNemesisService(r.DB)
-	nemesisEntities, err := nemesisService.Nemeses()
+	nemesisEntities, err := services.NewNemesisService(r.DB, GetPreloads(ctx)).Nemeses()
 	if err != nil {
 		return nil, err //! check business error
 	}
-
 	return transformers.TransformNemesisEntitiesToModels(nemesisEntities), nil
 }
 
 // Nemesis is the resolver for the nemesis field.
 func (r *queryResolver) Nemesis(ctx context.Context, id uint) (*models.Nemesis, error) {
-	panic(fmt.Errorf("not implemented: Nemesis - nemesis"))
+	nemesisEntity, err := services.NewNemesisService(r.DB, GetPreloads(ctx)).Nemesis(id)
+	if err != nil {
+		return nil, err //! check business error
+	}
+	return transformers.TransformNemesisEntityToModel(nemesisEntity), nil
 }

@@ -10,13 +10,15 @@ type CharacterService struct {
 	db *gorm.DB
 }
 
-func NewCharacterService(db *gorm.DB) *CharacterService {
-	return &CharacterService{db: db}
+func NewCharacterService(db *gorm.DB, preloads [][]string) *CharacterService {
+	s := CharacterService{}
+	s.db = PreloadDB(db, preloads)
+	return &s
 }
 
 func (s *CharacterService) Characters() ([]*entities.CharacterEntity, error) {
 	var characters []*entities.CharacterEntity
-	if err := s.db.Preload("Nemeses.Secrets").Find(&characters).Error; err != nil {
+	if err := s.db.Find(&characters).Error; err != nil {
 		return nil, err
 	}
 	return characters, nil
@@ -24,8 +26,7 @@ func (s *CharacterService) Characters() ([]*entities.CharacterEntity, error) {
 
 func (s *CharacterService) Character(id uint) (*entities.CharacterEntity, error) {
 	var character entities.CharacterEntity
-	// if err := s.db.Preload("Nemeses.Secrets").Preload("Nemeses.Character").First(&character, id).Error; err != nil {
-	if err := s.db.Preload("Nemeses.Secrets").First(&character, id).Error; err != nil {
+	if err := s.db.First(&character, id).Error; err != nil {
 		return nil, err
 	}
 	return &character, nil

@@ -10,8 +10,10 @@ type SecretService struct {
 	db *gorm.DB
 }
 
-func NewSecretService(db *gorm.DB) *SecretService {
-	return &SecretService{db: db}
+func NewSecretService(db *gorm.DB, preloads [][]string) *SecretService {
+	s := SecretService{}
+	s.db = PreloadDB(db, preloads)
+	return &s
 }
 
 func (s *SecretService) Secrets() ([]*entities.SecretEntity, error) {
@@ -20,4 +22,12 @@ func (s *SecretService) Secrets() ([]*entities.SecretEntity, error) {
 		return nil, err
 	}
 	return secrets, nil
+}
+
+func (s *SecretService) Secret(id uint) (*entities.SecretEntity, error) {
+	var secret entities.SecretEntity
+	if err := s.db.Find(&secret, id).Error; err != nil {
+		return nil, err
+	}
+	return &secret, nil
 }

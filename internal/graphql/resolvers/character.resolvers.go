@@ -13,24 +13,18 @@ import (
 
 // Characters is the resolver for the characters field.
 func (r *queryResolver) Characters(ctx context.Context) ([]*models.Character, error) {
-	characterService := services.NewCharacterService(r.DB)
-	characterEntities, err := characterService.Characters()
+	characterEntities, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Characters()
 	if err != nil {
 		return nil, err //! check business error
 	}
-
 	return transformers.TransformCharacterEntitiesToModels(characterEntities), nil
 }
 
 // Character is the resolver for the character field.
 func (r *queryResolver) Character(ctx context.Context, id uint) (*models.Character, error) {
-	characterService := services.NewCharacterService(r.DB)
-	characterEntity, err := characterService.Character(id)
+	characterEntity, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Character(id)
 	if err != nil {
 		return nil, err //! check business error
 	}
-
-	// fields := graphql.CollectFieldsCtx(ctx, nil)
-
 	return transformers.TransformCharacterEntityToModel(characterEntity), nil
 }

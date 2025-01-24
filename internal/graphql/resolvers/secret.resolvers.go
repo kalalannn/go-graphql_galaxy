@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"go-graphql_galaxy/internal/gorm/services"
 	"go-graphql_galaxy/internal/graphql/models"
 	"go-graphql_galaxy/internal/transformers"
@@ -14,16 +13,18 @@ import (
 
 // Secrets is the resolver for the secrets field.
 func (r *queryResolver) Secrets(ctx context.Context) ([]*models.Secret, error) {
-	secretService := services.NewSecretService(r.DB)
-	secretEntities, err := secretService.Secrets()
+	secretEntities, err := services.NewSecretService(r.DB, GetPreloads(ctx)).Secrets()
 	if err != nil {
 		return nil, err //! check business error
 	}
-
 	return transformers.TransformSecretEntitiesToModels(secretEntities), nil
 }
 
 // Secret is the resolver for the secret field.
 func (r *queryResolver) Secret(ctx context.Context, id uint) (*models.Secret, error) {
-	panic(fmt.Errorf("not implemented: Secret - secret"))
+	secretEntity, err := services.NewSecretService(r.DB, GetPreloads(ctx)).Secret(id)
+	if err != nil {
+		return nil, err //! check business error
+	}
+	return transformers.TransformSecretEntityToModel(secretEntity), nil
 }
