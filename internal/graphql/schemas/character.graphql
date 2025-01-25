@@ -19,7 +19,30 @@ type Character {
   nemeses: [Nemesis!]!
 }
 
+type Genders {
+  male: Int64!
+  female: Int64!
+  other: Int64!
+}
+
+enum CharacterOrderByField {
+  id
+  name
+  born
+  beer_consumption
+}
+
+input CharacterOrderBy {
+  field: CharacterOrderByField!
+  direction: OrderByDirection!
+}
+
 extend type Query {
-  characters: [Character!]!
+  characters_count: Int64!
+  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}): [Character!]!
   character(id: ID!): Character
+  average_age: Float!
+  average_weight: Float!
+  average_beer_consumption: Float!
+  genders: Genders!
 }

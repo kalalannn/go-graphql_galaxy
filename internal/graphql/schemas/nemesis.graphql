@@ -7,7 +7,15 @@ type Nemesis {
   secrets: [Secret!]!
 }
 
+type AliveNemeses {
+  alive: Int64!
+  dead: Int64!
+}
+
 extend type Query {
+  nemeses_count: Int64!
   nemeses: [Nemesis!]!
   nemesis(id: ID!): Nemesis
+  average_nemeses_years: Float!
+  alive_nemeses: AliveNemeses
 }

@@ -45,6 +45,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AliveNemeses struct {
+		Alive func(childComplexity int) int
+		Dead  func(childComplexity int) int
+	}
+
 	Character struct {
 		Ability         func(childComplexity int) int
 		BeerConsumption func(childComplexity int) int
@@ -59,6 +64,12 @@ type ComplexityRoot struct {
 		Weight          func(childComplexity int) int
 	}
 
+	Genders struct {
+		Female func(childComplexity int) int
+		Male   func(childComplexity int) int
+		Other  func(childComplexity int) int
+	}
+
 	Nemesis struct {
 		Character func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -68,13 +79,23 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Character       func(childComplexity int, id uint) int
-		Characters      func(childComplexity int) int
-		CharactersCount func(childComplexity int) int
-		Nemeses         func(childComplexity int) int
-		Nemesis         func(childComplexity int, id uint) int
-		Secret          func(childComplexity int, id uint) int
-		Secrets         func(childComplexity int) int
+		AliveNemeses           func(childComplexity int) int
+		AverageAge             func(childComplexity int) int
+		AverageBeerConsumption func(childComplexity int) int
+		AverageNemesesYears    func(childComplexity int) int
+		AverageWeight          func(childComplexity int) int
+		Character              func(childComplexity int, id uint) int
+		Characters             func(childComplexity int, orderBy *models.CharacterOrderBy) int
+		CharactersCount        func(childComplexity int) int
+		Genders                func(childComplexity int) int
+		HealthCheck            func(childComplexity int) int
+		Nemeses                func(childComplexity int) int
+		NemesesCount           func(childComplexity int) int
+		Nemesis                func(childComplexity int, id uint) int
+		Secret                 func(childComplexity int, id uint) int
+		Secrets                func(childComplexity int) int
+		SecretsCount           func(childComplexity int) int
+		ServerTime             func(childComplexity int) int
 	}
 
 	Secret struct {
@@ -85,11 +106,21 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	CharactersCount(ctx context.Context) (int32, error)
-	Characters(ctx context.Context) ([]*models.Character, error)
+	ServerTime(ctx context.Context) (string, error)
+	HealthCheck(ctx context.Context) (bool, error)
+	CharactersCount(ctx context.Context) (int64, error)
+	Characters(ctx context.Context, orderBy *models.CharacterOrderBy) ([]*models.Character, error)
 	Character(ctx context.Context, id uint) (*models.Character, error)
+	AverageAge(ctx context.Context) (float64, error)
+	AverageWeight(ctx context.Context) (float64, error)
+	AverageBeerConsumption(ctx context.Context) (float64, error)
+	Genders(ctx context.Context) (*models.Genders, error)
+	NemesesCount(ctx context.Context) (int64, error)
 	Nemeses(ctx context.Context) ([]*models.Nemesis, error)
 	Nemesis(ctx context.Context, id uint) (*models.Nemesis, error)
+	AverageNemesesYears(ctx context.Context) (float64, error)
+	AliveNemeses(ctx context.Context) (*models.AliveNemeses, error)
+	SecretsCount(ctx context.Context) (int64, error)
 	Secrets(ctx context.Context) ([]*models.Secret, error)
 	Secret(ctx context.Context, id uint) (*models.Secret, error)
 }
@@ -112,6 +143,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AliveNemeses.alive":
+		if e.complexity.AliveNemeses.Alive == nil {
+			break
+		}
+
+		return e.complexity.AliveNemeses.Alive(childComplexity), true
+
+	case "AliveNemeses.dead":
+		if e.complexity.AliveNemeses.Dead == nil {
+			break
+		}
+
+		return e.complexity.AliveNemeses.Dead(childComplexity), true
 
 	case "Character.ability":
 		if e.complexity.Character.Ability == nil {
@@ -190,6 +235,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Character.Weight(childComplexity), true
 
+	case "Genders.female":
+		if e.complexity.Genders.Female == nil {
+			break
+		}
+
+		return e.complexity.Genders.Female(childComplexity), true
+
+	case "Genders.male":
+		if e.complexity.Genders.Male == nil {
+			break
+		}
+
+		return e.complexity.Genders.Male(childComplexity), true
+
+	case "Genders.other":
+		if e.complexity.Genders.Other == nil {
+			break
+		}
+
+		return e.complexity.Genders.Other(childComplexity), true
+
 	case "Nemesis.character":
 		if e.complexity.Nemesis.Character == nil {
 			break
@@ -225,6 +291,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Nemesis.Years(childComplexity), true
 
+	case "Query.alive_nemeses":
+		if e.complexity.Query.AliveNemeses == nil {
+			break
+		}
+
+		return e.complexity.Query.AliveNemeses(childComplexity), true
+
+	case "Query.average_age":
+		if e.complexity.Query.AverageAge == nil {
+			break
+		}
+
+		return e.complexity.Query.AverageAge(childComplexity), true
+
+	case "Query.average_beer_consumption":
+		if e.complexity.Query.AverageBeerConsumption == nil {
+			break
+		}
+
+		return e.complexity.Query.AverageBeerConsumption(childComplexity), true
+
+	case "Query.average_nemeses_years":
+		if e.complexity.Query.AverageNemesesYears == nil {
+			break
+		}
+
+		return e.complexity.Query.AverageNemesesYears(childComplexity), true
+
+	case "Query.average_weight":
+		if e.complexity.Query.AverageWeight == nil {
+			break
+		}
+
+		return e.complexity.Query.AverageWeight(childComplexity), true
+
 	case "Query.character":
 		if e.complexity.Query.Character == nil {
 			break
@@ -242,7 +343,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Characters(childComplexity), true
+		args, err := ec.field_Query_characters_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Characters(childComplexity, args["orderBy"].(*models.CharacterOrderBy)), true
 
 	case "Query.characters_count":
 		if e.complexity.Query.CharactersCount == nil {
@@ -251,12 +357,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.CharactersCount(childComplexity), true
 
+	case "Query.genders":
+		if e.complexity.Query.Genders == nil {
+			break
+		}
+
+		return e.complexity.Query.Genders(childComplexity), true
+
+	case "Query.health_check":
+		if e.complexity.Query.HealthCheck == nil {
+			break
+		}
+
+		return e.complexity.Query.HealthCheck(childComplexity), true
+
 	case "Query.nemeses":
 		if e.complexity.Query.Nemeses == nil {
 			break
 		}
 
 		return e.complexity.Query.Nemeses(childComplexity), true
+
+	case "Query.nemeses_count":
+		if e.complexity.Query.NemesesCount == nil {
+			break
+		}
+
+		return e.complexity.Query.NemesesCount(childComplexity), true
 
 	case "Query.nemesis":
 		if e.complexity.Query.Nemesis == nil {
@@ -289,6 +416,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Secrets(childComplexity), true
 
+	case "Query.secrets_count":
+		if e.complexity.Query.SecretsCount == nil {
+			break
+		}
+
+		return e.complexity.Query.SecretsCount(childComplexity), true
+
+	case "Query.server_time":
+		if e.complexity.Query.ServerTime == nil {
+			break
+		}
+
+		return e.complexity.Query.ServerTime(childComplexity), true
+
 	case "Secret.id":
 		if e.complexity.Secret.ID == nil {
 			break
@@ -317,7 +458,9 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCharacterOrderBy,
+	)
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -420,9 +563,32 @@ type Character {
   nemeses: [Nemesis!]!
 }
 
+type Genders {
+  male: Int64!
+  female: Int64!
+  other: Int64!
+}
+
+enum CharacterOrderByField {
+  id
+  name
+  born
+  beer_consumption
+}
+
+input CharacterOrderBy {
+  field: CharacterOrderByField!
+  direction: OrderByDirection!
+}
+
 extend type Query {
-  characters: [Character!]!
+  characters_count: Int64!
+  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}): [Character!]!
   character(id: ID!): Character
+  average_age: Float!
+  average_weight: Float!
+  average_beer_consumption: Float!
+  genders: Genders!
 }`, BuiltIn: false},
 	{Name: "../schemas/nemesis.graphql", Input: `
 type Nemesis {
@@ -433,23 +599,39 @@ type Nemesis {
   secrets: [Secret!]!
 }
 
+type AliveNemeses {
+  alive: Int64!
+  dead: Int64!
+}
+
 extend type Query {
+  nemeses_count: Int64!
   nemeses: [Nemesis!]!
   nemesis(id: ID!): Nemesis
+  average_nemeses_years: Float!
+  alive_nemeses: AliveNemeses
+
 }`, BuiltIn: false},
-	{Name: "../schemas/schema.graphql", Input: `type Query {
-  characters_count: Int!
+	{Name: "../schemas/schema.graphql", Input: `scalar Int64
+
+enum OrderByDirection {
+  ASC
+  DESC
+}
+
+type Query {
+  server_time: String!
+  health_check: Boolean!
 }
 `, BuiltIn: false},
-	{Name: "../schemas/secret.graphql", Input: `scalar Int64
-
-type Secret {
+	{Name: "../schemas/secret.graphql", Input: `type Secret {
   id: ID!
   secret_code: Int64!
   nemesis: Nemesis!
 }
 
 extend type Query {
+  secrets_count: Int64!
   secrets: [Secret!]!
   secret(id: ID!): Secret
 }
@@ -504,6 +686,29 @@ func (ec *executionContext) field_Query_character_argsID(
 	}
 
 	var zeroVal uint
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_characters_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_characters_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_characters_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.CharacterOrderBy, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalOCharacterOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterOrderBy(ctx, tmp)
+	}
+
+	var zeroVal *models.CharacterOrderBy
 	return zeroVal, nil
 }
 
@@ -606,6 +811,94 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AliveNemeses_alive(ctx context.Context, field graphql.CollectedField, obj *models.AliveNemeses) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AliveNemeses_alive(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Alive, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AliveNemeses_alive(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AliveNemeses",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AliveNemeses_dead(ctx context.Context, field graphql.CollectedField, obj *models.AliveNemeses) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AliveNemeses_dead(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dead, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AliveNemeses_dead(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AliveNemeses",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Character_id(ctx context.Context, field graphql.CollectedField, obj *models.Character) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Character_id(ctx, field)
@@ -1094,6 +1387,138 @@ func (ec *executionContext) fieldContext_Character_nemeses(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Genders_male(ctx context.Context, field graphql.CollectedField, obj *models.Genders) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Genders_male(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Male, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Genders_male(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Genders",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Genders_female(ctx context.Context, field graphql.CollectedField, obj *models.Genders) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Genders_female(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Female, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Genders_female(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Genders",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Genders_other(ctx context.Context, field graphql.CollectedField, obj *models.Genders) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Genders_other(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Other, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Genders_other(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Genders",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Nemesis_id(ctx context.Context, field graphql.CollectedField, obj *models.Nemesis) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Nemesis_id(ctx, field)
 	if err != nil {
@@ -1343,6 +1768,94 @@ func (ec *executionContext) fieldContext_Nemesis_secrets(_ context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_server_time(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_server_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ServerTime(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_server_time(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_health_check(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_health_check(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().HealthCheck(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_health_check(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_characters_count(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_characters_count(ctx, field)
 	if err != nil {
@@ -1369,9 +1882,9 @@ func (ec *executionContext) _Query_characters_count(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int32)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_characters_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1381,7 +1894,7 @@ func (ec *executionContext) fieldContext_Query_characters_count(_ context.Contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Int64 does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1401,7 +1914,7 @@ func (ec *executionContext) _Query_characters(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Characters(rctx)
+		return ec.resolvers.Query().Characters(rctx, fc.Args["orderBy"].(*models.CharacterOrderBy))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1418,7 +1931,7 @@ func (ec *executionContext) _Query_characters(ctx context.Context, field graphql
 	return ec.marshalNCharacter2ᚕᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_characters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_characters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1451,6 +1964,17 @@ func (ec *executionContext) fieldContext_Query_characters(_ context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_characters_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -1527,6 +2051,234 @@ func (ec *executionContext) fieldContext_Query_character(ctx context.Context, fi
 	if fc.Args, err = ec.field_Query_character_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_average_age(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_average_age(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AverageAge(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_average_age(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_average_weight(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_average_weight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AverageWeight(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_average_weight(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_average_beer_consumption(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_average_beer_consumption(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AverageBeerConsumption(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_average_beer_consumption(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_genders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_genders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Genders(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Genders)
+	fc.Result = res
+	return ec.marshalNGenders2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐGenders(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_genders(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "male":
+				return ec.fieldContext_Genders_male(ctx, field)
+			case "female":
+				return ec.fieldContext_Genders_female(ctx, field)
+			case "other":
+				return ec.fieldContext_Genders_other(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Genders", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_nemeses_count(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_nemeses_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().NemesesCount(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_nemeses_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -1647,6 +2399,141 @@ func (ec *executionContext) fieldContext_Query_nemesis(ctx context.Context, fiel
 	if fc.Args, err = ec.field_Query_nemesis_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_average_nemeses_years(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_average_nemeses_years(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AverageNemesesYears(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_average_nemeses_years(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_alive_nemeses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_alive_nemeses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AliveNemeses(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.AliveNemeses)
+	fc.Result = res
+	return ec.marshalOAliveNemeses2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐAliveNemeses(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_alive_nemeses(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "alive":
+				return ec.fieldContext_AliveNemeses_alive(ctx, field)
+			case "dead":
+				return ec.fieldContext_AliveNemeses_dead(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AliveNemeses", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_secrets_count(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_secrets_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SecretsCount(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_secrets_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -3809,6 +4696,40 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCharacterOrderBy(ctx context.Context, obj any) (models.CharacterOrderBy, error) {
+	var it models.CharacterOrderBy
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "direction"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNCharacterOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterOrderByField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3816,6 +4737,50 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var aliveNemesesImplementors = []string{"AliveNemeses"}
+
+func (ec *executionContext) _AliveNemeses(ctx context.Context, sel ast.SelectionSet, obj *models.AliveNemeses) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, aliveNemesesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AliveNemeses")
+		case "alive":
+			out.Values[i] = ec._AliveNemeses_alive(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dead":
+			out.Values[i] = ec._AliveNemeses_dead(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
 
 var characterImplementors = []string{"Character"}
 
@@ -3871,6 +4836,55 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 		case "nemeses":
 			out.Values[i] = ec._Character_nemeses(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var gendersImplementors = []string{"Genders"}
+
+func (ec *executionContext) _Genders(ctx context.Context, sel ast.SelectionSet, obj *models.Genders) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, gendersImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Genders")
+		case "male":
+			out.Values[i] = ec._Genders_male(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "female":
+			out.Values[i] = ec._Genders_female(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "other":
+			out.Values[i] = ec._Genders_other(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3972,6 +4986,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "server_time":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_server_time(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "health_check":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_health_check(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "characters_count":
 			field := field
 
@@ -4035,6 +5093,116 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "average_age":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_average_age(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "average_weight":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_average_weight(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "average_beer_consumption":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_average_beer_consumption(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "genders":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_genders(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "nemeses_count":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_nemeses_count(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "nemeses":
 			field := field
 
@@ -4067,6 +5235,69 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_nemesis(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "average_nemeses_years":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_average_nemeses_years(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "alive_nemeses":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_alive_nemeses(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "secrets_count":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_secrets_count(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -4592,6 +5823,16 @@ func (ec *executionContext) marshalNCharacter2ᚖgoᚑgraphql_galaxyᚋinternal�
 	return ec._Character(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNCharacterOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterOrderByField(ctx context.Context, v any) (models.CharacterOrderByField, error) {
+	var res models.CharacterOrderByField
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCharacterOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterOrderByField(ctx context.Context, sel ast.SelectionSet, v models.CharacterOrderByField) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
 	res, err := graphql.UnmarshalFloatContext(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4605,6 +5846,20 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalNGenders2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐGenders(ctx context.Context, sel ast.SelectionSet, v models.Genders) graphql.Marshaler {
+	return ec._Genders(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGenders2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐGenders(ctx context.Context, sel ast.SelectionSet, v *models.Genders) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Genders(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2uint(ctx context.Context, v any) (uint, error) {
@@ -4704,6 +5959,16 @@ func (ec *executionContext) marshalNNemesis2ᚖgoᚑgraphql_galaxyᚋinternalᚋ
 		return graphql.Null
 	}
 	return ec._Nemesis(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx context.Context, v any) (models.OrderByDirection, error) {
+	var res models.OrderByDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx context.Context, sel ast.SelectionSet, v models.OrderByDirection) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNSecret2ᚕᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Secret) graphql.Marshaler {
@@ -5028,6 +6293,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOAliveNemeses2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐAliveNemeses(ctx context.Context, sel ast.SelectionSet, v *models.AliveNemeses) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AliveNemeses(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5059,6 +6331,14 @@ func (ec *executionContext) marshalOCharacter2ᚖgoᚑgraphql_galaxyᚋinternal�
 		return graphql.Null
 	}
 	return ec._Character(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCharacterOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐCharacterOrderBy(ctx context.Context, v any) (*models.CharacterOrderBy, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCharacterOrderBy(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {

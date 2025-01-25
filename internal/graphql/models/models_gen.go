@@ -2,6 +2,17 @@
 
 package models
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type AliveNemeses struct {
+	Alive int64 `json:"alive"`
+	Dead  int64 `json:"dead"`
+}
+
 type Character struct {
 	ID              uint       `json:"id"`
 	Name            string     `json:"name"`
@@ -14,6 +25,17 @@ type Character struct {
 	BeerConsumption int32      `json:"beer_consumption"`
 	KnowsTheAnswer  bool       `json:"knows_the_answer"`
 	Nemeses         []*Nemesis `json:"nemeses"`
+}
+
+type CharacterOrderBy struct {
+	Field     CharacterOrderByField `json:"field"`
+	Direction OrderByDirection      `json:"direction"`
+}
+
+type Genders struct {
+	Male   int64 `json:"male"`
+	Female int64 `json:"female"`
+	Other  int64 `json:"other"`
 }
 
 type Nemesis struct {
@@ -31,4 +53,90 @@ type Secret struct {
 	ID         uint     `json:"id"`
 	SecretCode int64    `json:"secret_code"`
 	Nemesis    *Nemesis `json:"nemesis"`
+}
+
+type CharacterOrderByField string
+
+const (
+	CharacterOrderByFieldID              CharacterOrderByField = "id"
+	CharacterOrderByFieldName            CharacterOrderByField = "name"
+	CharacterOrderByFieldBorn            CharacterOrderByField = "born"
+	CharacterOrderByFieldBeerConsumption CharacterOrderByField = "beer_consumption"
+)
+
+var AllCharacterOrderByField = []CharacterOrderByField{
+	CharacterOrderByFieldID,
+	CharacterOrderByFieldName,
+	CharacterOrderByFieldBorn,
+	CharacterOrderByFieldBeerConsumption,
+}
+
+func (e CharacterOrderByField) IsValid() bool {
+	switch e {
+	case CharacterOrderByFieldID, CharacterOrderByFieldName, CharacterOrderByFieldBorn, CharacterOrderByFieldBeerConsumption:
+		return true
+	}
+	return false
+}
+
+func (e CharacterOrderByField) String() string {
+	return string(e)
+}
+
+func (e *CharacterOrderByField) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CharacterOrderByField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CharacterOrderByField", str)
+	}
+	return nil
+}
+
+func (e CharacterOrderByField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type OrderByDirection string
+
+const (
+	OrderByDirectionAsc  OrderByDirection = "ASC"
+	OrderByDirectionDesc OrderByDirection = "DESC"
+)
+
+var AllOrderByDirection = []OrderByDirection{
+	OrderByDirectionAsc,
+	OrderByDirectionDesc,
+}
+
+func (e OrderByDirection) IsValid() bool {
+	switch e {
+	case OrderByDirectionAsc, OrderByDirectionDesc:
+		return true
+	}
+	return false
+}
+
+func (e OrderByDirection) String() string {
+	return string(e)
+}
+
+func (e *OrderByDirection) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OrderByDirection(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OrderByDirection", str)
+	}
+	return nil
+}
+
+func (e OrderByDirection) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

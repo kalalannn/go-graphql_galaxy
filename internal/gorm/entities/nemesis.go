@@ -1,7 +1,14 @@
 package entities
 
+const NemesisTableName = "nemesis"
+
 func (NemesisEntity) TableName() string {
-	return "nemesis"
+	return NemesisTableName
+}
+
+type AliveNemeses struct {
+	Alive int64
+	Dead  int64
 }
 
 type NemesisEntity struct {

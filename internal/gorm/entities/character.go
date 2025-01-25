@@ -4,8 +4,16 @@ import (
 	"time"
 )
 
+const CharacterTableName = "character"
+
 func (CharacterEntity) TableName() string {
-	return "character"
+	return CharacterTableName
+}
+
+type Genders struct {
+	Male   int64
+	Female int64
+	Other  int64
 }
 
 type CharacterEntity struct {

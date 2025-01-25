@@ -19,6 +19,15 @@ const (
 	IntrospectionObjectSchema = "__schema"
 )
 
+const (
+	CharacterObjectSchema  = "character"
+	CharactersObjectSchema = "characters"
+	NemesisObjectSchema    = "nemesis"
+	NemesesObjectSchema    = "nemeses"
+	SecretObjectSchema     = "secret"
+	SecretsObjectSchema    = "secrets"
+)
+
 var _ interface {
 	graphql.OperationContextMutator
 	graphql.HandlerExtension
@@ -57,12 +66,17 @@ func (m *DepthExtension) MutateOperationContext(ctx context.Context, opCtx *grap
 
 func (m *DepthExtension) InterceptRootField(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
 	rootFieldCtx := graphql.GetRootFieldContext(ctx)
-	if rootFieldCtx.Object == IntrospectionObjectSchema {
-		return next(ctx)
+
+	switch rootFieldCtx.Object {
+	case CharacterObjectSchema, CharactersObjectSchema,
+		NemesisObjectSchema, NemesesObjectSchema,
+		SecretObjectSchema, SecretsObjectSchema:
+		return next(context.WithValue(ctx,
+			gqlcontext.PreloadContextKey,
+			gqlcontext.DFSPreload(rootFieldCtx)))
 	}
-	return next(context.WithValue(ctx,
-		gqlcontext.PreloadContextKey,
-		gqlcontext.DFSPreload(rootFieldCtx)))
+
+	return next(ctx)
 }
 
 // func (m *DepthExtension) InterceptOperation(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {

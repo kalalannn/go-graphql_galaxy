@@ -1,7 +1,9 @@
 package entities
 
+const SecretTableName = "secret"
+
 func (SecretEntity) TableName() string {
-	return "secret"
+	return SecretTableName
 }
 
 type SecretEntity struct {

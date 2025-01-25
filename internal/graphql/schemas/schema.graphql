@@ -1,3 +1,11 @@
+scalar Int64
+
+enum OrderByDirection {
+  ASC
+  DESC
+}
+
 type Query {
-  characters_count: Int!
+  server_time: String!
+  health_check: Boolean!
 }

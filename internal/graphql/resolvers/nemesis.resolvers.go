@@ -11,6 +11,11 @@ import (
 	"go-graphql_galaxy/internal/transformers"
 )
 
+// NemesesCount is the resolver for the nemeses_count field.
+func (r *queryResolver) NemesesCount(ctx context.Context) (int64, error) {
+	return services.NewNemesisService(r.DB, EmptyPreloads()).NemesesCount(), nil
+}
+
 // Nemeses is the resolver for the nemeses field.
 func (r *queryResolver) Nemeses(ctx context.Context) ([]*models.Nemesis, error) {
 	nemesisEntities, err := services.NewNemesisService(r.DB, GetPreloads(ctx)).Nemeses()
@@ -27,4 +32,18 @@ func (r *queryResolver) Nemesis(ctx context.Context, id uint) (*models.Nemesis, 
 		return nil, err //! check business error
 	}
 	return transformers.TransformNemesisEntityToModel(nemesisEntity), nil
+}
+
+// AverageNemesesYears is the resolver for the average_nemeses_years field.
+func (r *queryResolver) AverageNemesesYears(ctx context.Context) (float64, error) {
+	return transformers.RoundFloat(services.NewNemesisService(r.DB, EmptyPreloads()).AverageNemesesYears(), 2), nil
+}
+
+// AliveNemeses is the resolver for the alive_nemeses field.
+func (r *queryResolver) AliveNemeses(ctx context.Context) (*models.AliveNemeses, error) {
+	aliveNemeses := services.NewNemesisService(r.DB, EmptyPreloads()).AliveNemeses()
+	return &models.AliveNemeses{
+		Alive: aliveNemeses.Alive,
+		Dead:  aliveNemeses.Dead,
+	}, nil
 }

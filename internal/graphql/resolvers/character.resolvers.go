@@ -11,9 +11,16 @@ import (
 	"go-graphql_galaxy/internal/transformers"
 )
 
+// CharactersCount is the resolver for the characters_count field.
+func (r *queryResolver) CharactersCount(ctx context.Context) (int64, error) {
+	return services.NewCharacterService(r.DB, EmptyPreloads()).CharactersCount(), nil
+}
+
 // Characters is the resolver for the characters field.
-func (r *queryResolver) Characters(ctx context.Context) ([]*models.Character, error) {
-	characterEntities, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Characters()
+func (r *queryResolver) Characters(ctx context.Context, orderBy *models.CharacterOrderBy) ([]*models.Character, error) {
+	characterEntities, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Characters(
+		OrderBy(orderBy.Field.String(), orderBy.Direction.String()),
+	)
 	if err != nil {
 		return nil, err //! check business error
 	}
@@ -27,4 +34,29 @@ func (r *queryResolver) Character(ctx context.Context, id uint) (*models.Charact
 		return nil, err //! check business error
 	}
 	return transformers.TransformCharacterEntityToModel(characterEntity), nil
+}
+
+// AverageAge is the resolver for the average_age field.
+func (r *queryResolver) AverageAge(ctx context.Context) (float64, error) {
+	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageAge(), 2), nil
+}
+
+// AverageWeight is the resolver for the average_weight field.
+func (r *queryResolver) AverageWeight(ctx context.Context) (float64, error) {
+	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageWeight(), 2), nil
+}
+
+// AverageBeerConsumption is the resolver for the average_beer_consumption field.
+func (r *queryResolver) AverageBeerConsumption(ctx context.Context) (float64, error) {
+	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageBeerConsumption(), 2), nil
+}
+
+// Genders is the resolver for the genders field.
+func (r *queryResolver) Genders(ctx context.Context) (*models.Genders, error) {
+	genders := services.NewCharacterService(r.DB, EmptyPreloads()).Genders()
+	return &models.Genders{
+		Male:   genders.Male,
+		Female: genders.Female,
+		Other:  genders.Other,
+	}, nil
 }

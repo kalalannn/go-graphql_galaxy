@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"go-graphql_galaxy/internal/gqlcontext"
 
 	"gorm.io/gorm"
@@ -15,6 +16,14 @@ type Resolver struct {
 	DB *gorm.DB
 }
 
+func EmptyPreloads() [][]string {
+	return [][]string{}
+}
+
 func GetPreloads(ctx context.Context) [][]string {
 	return ctx.Value(gqlcontext.PreloadContextKey).([][]string)
+}
+
+func OrderBy(field, direction string) string {
+	return fmt.Sprintf("%s %s", field, direction)
 }

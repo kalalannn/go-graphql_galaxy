@@ -6,13 +6,19 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"go-graphql_galaxy/internal/graphql/generated"
+	"go-graphql_galaxy/internal/transformers"
+	"time"
 )
 
-// CharactersCount is the resolver for the characters_count field.
-func (r *queryResolver) CharactersCount(ctx context.Context) (int32, error) {
-	panic(fmt.Errorf("not implemented: CharactersCount - characters_count"))
+// ServerTime is the resolver for the server_time field.
+func (r *queryResolver) ServerTime(ctx context.Context) (string, error) {
+	return time.Now().Format(transformers.TimeFormat), nil
+}
+
+// HealthCheck is the resolver for the health_check field.
+func (r *queryResolver) HealthCheck(ctx context.Context) (bool, error) {
+	return true, nil
 }
 
 // Query returns generated.QueryResolver implementation.

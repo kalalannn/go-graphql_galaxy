@@ -16,6 +16,12 @@ func NewSecretService(db *gorm.DB, preloads [][]string) *SecretService {
 	return &s
 }
 
+func (s *SecretService) SecretsCount() int64 {
+	var count int64
+	s.db.Model(&entities.SecretEntity{}).Count(&count)
+	return count
+}
+
 func (s *SecretService) Secrets() ([]*entities.SecretEntity, error) {
 	var secrets []*entities.SecretEntity
 	if err := s.db.Find(&secrets).Error; err != nil {
