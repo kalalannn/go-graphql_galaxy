@@ -16,14 +16,21 @@ func (r *queryResolver) CharactersCount(ctx context.Context) (int64, error) {
 }
 
 // Characters is the resolver for the characters field.
-func (r *queryResolver) Characters(ctx context.Context, orderBy *models.CharacterOrderBy) ([]*models.Character, error) {
+func (r *queryResolver) Characters(ctx context.Context, orderBy *models.CharacterOrderBy, pagination *models.PaginationInput) ([]*models.Character, error) {
+	limit, offset, err := GetPagination(pagination.Limit, pagination.Offset)
+	if err != nil {
+		return nil, err
+	}
+
 	characterEntities, err := r.CharacterService.Characters(
 		GetPreloads(ctx),
-		OrderBy(orderBy.Field.String(), orderBy.Direction.String()),
+		GetOrderBy(orderBy.Field.String(), orderBy.Direction.String()),
+		limit, offset,
 	)
 	if err != nil {
 		return nil, err //! check business error
 	}
+
 	return transformers.TransformCharacterEntitiesToModels(characterEntities), nil
 }
 

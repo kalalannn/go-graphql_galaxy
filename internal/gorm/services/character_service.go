@@ -23,8 +23,9 @@ func (s *CharacterService) CharactersCount() int64 {
 	return count
 }
 
-func (s *CharacterService) Characters(preloads [][]string, orderBy string) ([]*entities.CharacterEntity, error) {
-	db := database.PreloadDB(s.db, preloads)
+func (s *CharacterService) Characters(preloads [][]string, orderBy string, limit, offset *int32) ([]*entities.CharacterEntity, error) {
+	db := database.LimitOffsetDB(database.PreloadDB(s.db, preloads), limit, offset)
+
 	var characters []*entities.CharacterEntity
 	if err := db.Order(orderBy).Find(&characters).Error; err != nil {
 		return nil, err

@@ -23,10 +23,11 @@ func (s *SecretService) SecretsCount() int64 {
 	return count
 }
 
-func (s *SecretService) Secrets(preloads [][]string) ([]*entities.SecretEntity, error) {
-	db := database.PreloadDB(s.db, preloads)
+func (s *SecretService) Secrets(preloads [][]string, orderBy string, limit, offset *int32) ([]*entities.SecretEntity, error) {
+	db := database.LimitOffsetDB(database.PreloadDB(s.db, preloads), limit, offset)
+
 	var secrets []*entities.SecretEntity
-	if err := db.Find(&secrets).Error; err != nil {
+	if err := db.Order(orderBy).Find(&secrets).Error; err != nil {
 		return nil, err
 	}
 	return secrets, nil

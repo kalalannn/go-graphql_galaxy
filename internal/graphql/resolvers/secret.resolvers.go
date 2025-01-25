@@ -16,11 +16,21 @@ func (r *queryResolver) SecretsCount(ctx context.Context) (int64, error) {
 }
 
 // Secrets is the resolver for the secrets field.
-func (r *queryResolver) Secrets(ctx context.Context) ([]*models.Secret, error) {
-	secretEntities, err := r.SecretService.Secrets(GetPreloads(ctx))
+func (r *queryResolver) Secrets(ctx context.Context, orderBy *models.SecretOrderBy, pagination *models.PaginationInput) ([]*models.Secret, error) {
+	limit, offset, err := GetPagination(pagination.Limit, pagination.Offset)
+	if err != nil {
+		return nil, err
+	}
+
+	secretEntities, err := r.SecretService.Secrets(
+		GetPreloads(ctx),
+		GetOrderBy(orderBy.Field.String(), orderBy.Direction.String()),
+		limit, offset,
+	)
 	if err != nil {
 		return nil, err //! check business error
 	}
+
 	return transformers.TransformSecretEntitiesToModels(secretEntities), nil
 }
 

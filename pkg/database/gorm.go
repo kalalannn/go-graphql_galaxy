@@ -25,3 +25,13 @@ func PreloadDB(db *gorm.DB, preloads [][]string) *gorm.DB {
 	}
 	return db
 }
+
+func LimitOffsetDB(db *gorm.DB, limit, offset *int32) *gorm.DB {
+	if limit != nil {
+		db = db.Limit(int(*limit))
+		if offset != nil {
+			db = db.Offset(int(*offset))
+		}
+	}
+	return db
+}

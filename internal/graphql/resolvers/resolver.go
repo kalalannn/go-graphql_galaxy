@@ -35,6 +35,17 @@ func GetPreloads(ctx context.Context) [][]string {
 	return ctx.Value(gqlcontext.PreloadContextKey).([][]string)
 }
 
-func OrderBy(field, direction string) string {
+func GetOrderBy(field, direction string) string {
 	return fmt.Sprintf("%s %s", field, direction)
+}
+
+func GetPagination(limit, offset *int32) (*int32, *int32, error) {
+	if offset != nil && limit == nil {
+		return nil, nil, fmt.Errorf("limit is required when offset is provided")
+	}
+	var zero int32 = 0
+	if limit != nil && offset == nil {
+		offset = &zero
+	}
+	return limit, offset, nil
 }

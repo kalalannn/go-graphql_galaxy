@@ -5,6 +5,7 @@
 # ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 # type Character @goModel(model: "models.Character") {
+
 type Character {
   id: ID!
   name: String!
@@ -39,7 +40,7 @@ input CharacterOrderBy {
 
 extend type Query {
   characters_count: Int64!
-  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}): [Character!]!
+  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}, pagination: PaginationInput): [Character!]!
   character(id: ID!): Character
   average_age: Float!
   average_weight: Float!

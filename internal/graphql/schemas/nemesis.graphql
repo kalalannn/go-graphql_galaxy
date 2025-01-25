@@ -12,9 +12,19 @@ type AliveNemeses {
   dead: Int64!
 }
 
+enum NemesisOrderByField {
+  id
+  years
+}
+
+input NemesisOrderBy {
+  field: NemesisOrderByField!
+  direction: OrderByDirection!
+}
+
 extend type Query {
   nemeses_count: Int64!
-  nemeses: [Nemesis!]!
+  nemeses(orderBy: NemesisOrderBy = {field: id, direction: ASC}, pagination: PaginationInput): [Nemesis!]!
   nemesis(id: ID!): Nemesis
   average_nemeses_years: Float!
   alive_nemeses: AliveNemeses

@@ -85,15 +85,15 @@ type ComplexityRoot struct {
 		AverageNemesesYears    func(childComplexity int) int
 		AverageWeight          func(childComplexity int) int
 		Character              func(childComplexity int, id uint) int
-		Characters             func(childComplexity int, orderBy *models.CharacterOrderBy) int
+		Characters             func(childComplexity int, orderBy *models.CharacterOrderBy, pagination *models.PaginationInput) int
 		CharactersCount        func(childComplexity int) int
 		Genders                func(childComplexity int) int
 		HealthCheck            func(childComplexity int) int
-		Nemeses                func(childComplexity int) int
+		Nemeses                func(childComplexity int, orderBy *models.NemesisOrderBy, pagination *models.PaginationInput) int
 		NemesesCount           func(childComplexity int) int
 		Nemesis                func(childComplexity int, id uint) int
 		Secret                 func(childComplexity int, id uint) int
-		Secrets                func(childComplexity int) int
+		Secrets                func(childComplexity int, orderBy *models.SecretOrderBy, pagination *models.PaginationInput) int
 		SecretsCount           func(childComplexity int) int
 		ServerTime             func(childComplexity int) int
 	}
@@ -109,19 +109,19 @@ type QueryResolver interface {
 	ServerTime(ctx context.Context) (string, error)
 	HealthCheck(ctx context.Context) (bool, error)
 	CharactersCount(ctx context.Context) (int64, error)
-	Characters(ctx context.Context, orderBy *models.CharacterOrderBy) ([]*models.Character, error)
+	Characters(ctx context.Context, orderBy *models.CharacterOrderBy, pagination *models.PaginationInput) ([]*models.Character, error)
 	Character(ctx context.Context, id uint) (*models.Character, error)
 	AverageAge(ctx context.Context) (float64, error)
 	AverageWeight(ctx context.Context) (float64, error)
 	AverageBeerConsumption(ctx context.Context) (float64, error)
 	Genders(ctx context.Context) (*models.Genders, error)
 	NemesesCount(ctx context.Context) (int64, error)
-	Nemeses(ctx context.Context) ([]*models.Nemesis, error)
+	Nemeses(ctx context.Context, orderBy *models.NemesisOrderBy, pagination *models.PaginationInput) ([]*models.Nemesis, error)
 	Nemesis(ctx context.Context, id uint) (*models.Nemesis, error)
 	AverageNemesesYears(ctx context.Context) (float64, error)
 	AliveNemeses(ctx context.Context) (*models.AliveNemeses, error)
 	SecretsCount(ctx context.Context) (int64, error)
-	Secrets(ctx context.Context) ([]*models.Secret, error)
+	Secrets(ctx context.Context, orderBy *models.SecretOrderBy, pagination *models.PaginationInput) ([]*models.Secret, error)
 	Secret(ctx context.Context, id uint) (*models.Secret, error)
 }
 
@@ -348,7 +348,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Characters(childComplexity, args["orderBy"].(*models.CharacterOrderBy)), true
+		return e.complexity.Query.Characters(childComplexity, args["orderBy"].(*models.CharacterOrderBy), args["pagination"].(*models.PaginationInput)), true
 
 	case "Query.characters_count":
 		if e.complexity.Query.CharactersCount == nil {
@@ -376,7 +376,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Nemeses(childComplexity), true
+		args, err := ec.field_Query_nemeses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Nemeses(childComplexity, args["orderBy"].(*models.NemesisOrderBy), args["pagination"].(*models.PaginationInput)), true
 
 	case "Query.nemeses_count":
 		if e.complexity.Query.NemesesCount == nil {
@@ -414,7 +419,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Secrets(childComplexity), true
+		args, err := ec.field_Query_secrets_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Secrets(childComplexity, args["orderBy"].(*models.SecretOrderBy), args["pagination"].(*models.PaginationInput)), true
 
 	case "Query.secrets_count":
 		if e.complexity.Query.SecretsCount == nil {
@@ -460,6 +470,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCharacterOrderBy,
+		ec.unmarshalInputNemesisOrderBy,
+		ec.unmarshalInputPaginationInput,
+		ec.unmarshalInputSecretOrderBy,
 	)
 	first := true
 
@@ -549,6 +562,7 @@ var sources = []*ast.Source{
 # ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 # type Character @goModel(model: "models.Character") {
+
 type Character {
   id: ID!
   name: String!
@@ -583,7 +597,7 @@ input CharacterOrderBy {
 
 extend type Query {
   characters_count: Int64!
-  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}): [Character!]!
+  characters(orderBy: CharacterOrderBy = {field: id, direction: ASC}, pagination: PaginationInput): [Character!]!
   character(id: ID!): Character
   average_age: Float!
   average_weight: Float!
@@ -604,19 +618,33 @@ type AliveNemeses {
   dead: Int64!
 }
 
+enum NemesisOrderByField {
+  id
+  years
+}
+
+input NemesisOrderBy {
+  field: NemesisOrderByField!
+  direction: OrderByDirection!
+}
+
 extend type Query {
   nemeses_count: Int64!
-  nemeses: [Nemesis!]!
+  nemeses(orderBy: NemesisOrderBy = {field: id, direction: ASC}, pagination: PaginationInput): [Nemesis!]!
   nemesis(id: ID!): Nemesis
   average_nemeses_years: Float!
   alive_nemeses: AliveNemeses
-
 }`, BuiltIn: false},
 	{Name: "../schemas/schema.graphql", Input: `scalar Int64
 
 enum OrderByDirection {
   ASC
   DESC
+}
+
+input PaginationInput {
+  limit: Int
+  offset: Int
 }
 
 type Query {
@@ -630,9 +658,19 @@ type Query {
   nemesis: Nemesis!
 }
 
+enum SecretOrderByField {
+  id
+  secret_code
+}
+
+input SecretOrderBy {
+  field: SecretOrderByField!
+  direction: OrderByDirection!
+}
+
 extend type Query {
   secrets_count: Int64!
-  secrets: [Secret!]!
+  secrets(orderBy: SecretOrderBy = {field: id, direction: ASC}, pagination: PaginationInput): [Secret!]!
   secret(id: ID!): Secret
 }
 `, BuiltIn: false},
@@ -697,6 +735,11 @@ func (ec *executionContext) field_Query_characters_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["orderBy"] = arg0
+	arg1, err := ec.field_Query_characters_argsPagination(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pagination"] = arg1
 	return args, nil
 }
 func (ec *executionContext) field_Query_characters_argsOrderBy(
@@ -709,6 +752,60 @@ func (ec *executionContext) field_Query_characters_argsOrderBy(
 	}
 
 	var zeroVal *models.CharacterOrderBy
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_characters_argsPagination(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.PaginationInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+	if tmp, ok := rawArgs["pagination"]; ok {
+		return ec.unmarshalOPaginationInput2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐPaginationInput(ctx, tmp)
+	}
+
+	var zeroVal *models.PaginationInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_nemeses_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_nemeses_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg0
+	arg1, err := ec.field_Query_nemeses_argsPagination(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pagination"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Query_nemeses_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.NemesisOrderBy, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalONemesisOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisOrderBy(ctx, tmp)
+	}
+
+	var zeroVal *models.NemesisOrderBy
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_nemeses_argsPagination(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.PaginationInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+	if tmp, ok := rawArgs["pagination"]; ok {
+		return ec.unmarshalOPaginationInput2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐPaginationInput(ctx, tmp)
+	}
+
+	var zeroVal *models.PaginationInput
 	return zeroVal, nil
 }
 
@@ -755,6 +852,47 @@ func (ec *executionContext) field_Query_secret_argsID(
 	}
 
 	var zeroVal uint
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_secrets_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_secrets_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg0
+	arg1, err := ec.field_Query_secrets_argsPagination(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pagination"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Query_secrets_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.SecretOrderBy, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalOSecretOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretOrderBy(ctx, tmp)
+	}
+
+	var zeroVal *models.SecretOrderBy
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_secrets_argsPagination(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*models.PaginationInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+	if tmp, ok := rawArgs["pagination"]; ok {
+		return ec.unmarshalOPaginationInput2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐPaginationInput(ctx, tmp)
+	}
+
+	var zeroVal *models.PaginationInput
 	return zeroVal, nil
 }
 
@@ -1914,7 +2052,7 @@ func (ec *executionContext) _Query_characters(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Characters(rctx, fc.Args["orderBy"].(*models.CharacterOrderBy))
+		return ec.resolvers.Query().Characters(rctx, fc.Args["orderBy"].(*models.CharacterOrderBy), fc.Args["pagination"].(*models.PaginationInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2297,7 +2435,7 @@ func (ec *executionContext) _Query_nemeses(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Nemeses(rctx)
+		return ec.resolvers.Query().Nemeses(rctx, fc.Args["orderBy"].(*models.NemesisOrderBy), fc.Args["pagination"].(*models.PaginationInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2314,7 +2452,7 @@ func (ec *executionContext) _Query_nemeses(ctx context.Context, field graphql.Co
 	return ec.marshalNNemesis2ᚕᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_nemeses(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_nemeses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2335,6 +2473,17 @@ func (ec *executionContext) fieldContext_Query_nemeses(_ context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Nemesis", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_nemeses_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -2552,7 +2701,7 @@ func (ec *executionContext) _Query_secrets(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Secrets(rctx)
+		return ec.resolvers.Query().Secrets(rctx, fc.Args["orderBy"].(*models.SecretOrderBy), fc.Args["pagination"].(*models.PaginationInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2569,7 +2718,7 @@ func (ec *executionContext) _Query_secrets(ctx context.Context, field graphql.Co
 	return ec.marshalNSecret2ᚕᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_secrets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_secrets(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2586,6 +2735,17 @@ func (ec *executionContext) fieldContext_Query_secrets(_ context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Secret", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_secrets_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4730,6 +4890,108 @@ func (ec *executionContext) unmarshalInputCharacterOrderBy(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNemesisOrderBy(ctx context.Context, obj any) (models.NemesisOrderBy, error) {
+	var it models.NemesisOrderBy
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "direction"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNNemesisOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisOrderByField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, obj any) (models.PaginationInput, error) {
+	var it models.PaginationInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"limit", "offset"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Offset = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSecretOrderBy(ctx context.Context, obj any) (models.SecretOrderBy, error) {
+	var it models.SecretOrderBy
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "direction"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNSecretOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretOrderByField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -5961,6 +6223,16 @@ func (ec *executionContext) marshalNNemesis2ᚖgoᚑgraphql_galaxyᚋinternalᚋ
 	return ec._Nemesis(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNNemesisOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisOrderByField(ctx context.Context, v any) (models.NemesisOrderByField, error) {
+	var res models.NemesisOrderByField
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNemesisOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisOrderByField(ctx context.Context, sel ast.SelectionSet, v models.NemesisOrderByField) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNOrderByDirection2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐOrderByDirection(ctx context.Context, v any) (models.OrderByDirection, error) {
 	var res models.OrderByDirection
 	err := res.UnmarshalGQL(v)
@@ -6023,6 +6295,16 @@ func (ec *executionContext) marshalNSecret2ᚖgoᚑgraphql_galaxyᚋinternalᚋg
 		return graphql.Null
 	}
 	return ec._Secret(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSecretOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretOrderByField(ctx context.Context, v any) (models.SecretOrderByField, error) {
+	var res models.SecretOrderByField
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSecretOrderByField2goᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretOrderByField(ctx context.Context, sel ast.SelectionSet, v models.SecretOrderByField) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
@@ -6380,11 +6662,35 @@ func (ec *executionContext) marshalONemesis2ᚖgoᚑgraphql_galaxyᚋinternalᚋ
 	return ec._Nemesis(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalONemesisOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐNemesisOrderBy(ctx context.Context, v any) (*models.NemesisOrderBy, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNemesisOrderBy(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOPaginationInput2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐPaginationInput(ctx context.Context, v any) (*models.PaginationInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPaginationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOSecret2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecret(ctx context.Context, sel ast.SelectionSet, v *models.Secret) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Secret(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSecretOrderBy2ᚖgoᚑgraphql_galaxyᚋinternalᚋgraphqlᚋmodelsᚐSecretOrderBy(ctx context.Context, v any) (*models.SecretOrderBy, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSecretOrderBy(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

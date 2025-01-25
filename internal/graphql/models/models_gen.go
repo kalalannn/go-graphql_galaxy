@@ -46,6 +46,16 @@ type Nemesis struct {
 	Secrets   []*Secret  `json:"secrets"`
 }
 
+type NemesisOrderBy struct {
+	Field     NemesisOrderByField `json:"field"`
+	Direction OrderByDirection    `json:"direction"`
+}
+
+type PaginationInput struct {
+	Limit  *int32 `json:"limit,omitempty"`
+	Offset *int32 `json:"offset,omitempty"`
+}
+
 type Query struct {
 }
 
@@ -53,6 +63,11 @@ type Secret struct {
 	ID         uint     `json:"id"`
 	SecretCode int64    `json:"secret_code"`
 	Nemesis    *Nemesis `json:"nemesis"`
+}
+
+type SecretOrderBy struct {
+	Field     SecretOrderByField `json:"field"`
+	Direction OrderByDirection   `json:"direction"`
 }
 
 type CharacterOrderByField string
@@ -100,6 +115,47 @@ func (e CharacterOrderByField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type NemesisOrderByField string
+
+const (
+	NemesisOrderByFieldID    NemesisOrderByField = "id"
+	NemesisOrderByFieldYears NemesisOrderByField = "years"
+)
+
+var AllNemesisOrderByField = []NemesisOrderByField{
+	NemesisOrderByFieldID,
+	NemesisOrderByFieldYears,
+}
+
+func (e NemesisOrderByField) IsValid() bool {
+	switch e {
+	case NemesisOrderByFieldID, NemesisOrderByFieldYears:
+		return true
+	}
+	return false
+}
+
+func (e NemesisOrderByField) String() string {
+	return string(e)
+}
+
+func (e *NemesisOrderByField) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NemesisOrderByField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NemesisOrderByField", str)
+	}
+	return nil
+}
+
+func (e NemesisOrderByField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type OrderByDirection string
 
 const (
@@ -138,5 +194,46 @@ func (e *OrderByDirection) UnmarshalGQL(v any) error {
 }
 
 func (e OrderByDirection) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SecretOrderByField string
+
+const (
+	SecretOrderByFieldID         SecretOrderByField = "id"
+	SecretOrderByFieldSecretCode SecretOrderByField = "secret_code"
+)
+
+var AllSecretOrderByField = []SecretOrderByField{
+	SecretOrderByFieldID,
+	SecretOrderByFieldSecretCode,
+}
+
+func (e SecretOrderByField) IsValid() bool {
+	switch e {
+	case SecretOrderByFieldID, SecretOrderByFieldSecretCode:
+		return true
+	}
+	return false
+}
+
+func (e SecretOrderByField) String() string {
+	return string(e)
+}
+
+func (e *SecretOrderByField) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SecretOrderByField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SecretOrderByField", str)
+	}
+	return nil
+}
+
+func (e SecretOrderByField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -23,10 +23,11 @@ func (s *NemesisService) NemesesCount() int64 {
 	return count
 }
 
-func (s *NemesisService) Nemeses(preloads [][]string) ([]*entities.NemesisEntity, error) {
-	db := database.PreloadDB(s.db, preloads)
+func (s *NemesisService) Nemeses(preloads [][]string, orderBy string, limit, offset *int32) ([]*entities.NemesisEntity, error) {
+	db := database.LimitOffsetDB(database.PreloadDB(s.db, preloads), limit, offset)
+
 	var nemeses []*entities.NemesisEntity
-	if err := db.Find(&nemeses).Error; err != nil {
+	if err := db.Order(orderBy).Find(&nemeses).Error; err != nil {
 		return nil, err
 	}
 	return nemeses, nil

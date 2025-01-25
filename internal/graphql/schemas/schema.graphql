@@ -5,6 +5,11 @@ enum OrderByDirection {
   DESC
 }
 
+input PaginationInput {
+  limit: Int
+  offset: Int
+}
+
 type Query {
   server_time: String!
   health_check: Boolean!
