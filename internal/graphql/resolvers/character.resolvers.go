@@ -6,19 +6,19 @@ package resolvers
 
 import (
 	"context"
-	"go-graphql_galaxy/internal/gorm/services"
 	"go-graphql_galaxy/internal/graphql/models"
 	"go-graphql_galaxy/internal/transformers"
 )
 
 // CharactersCount is the resolver for the characters_count field.
 func (r *queryResolver) CharactersCount(ctx context.Context) (int64, error) {
-	return services.NewCharacterService(r.DB, EmptyPreloads()).CharactersCount(), nil
+	return r.CharacterService.CharactersCount(), nil
 }
 
 // Characters is the resolver for the characters field.
 func (r *queryResolver) Characters(ctx context.Context, orderBy *models.CharacterOrderBy) ([]*models.Character, error) {
-	characterEntities, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Characters(
+	characterEntities, err := r.CharacterService.Characters(
+		GetPreloads(ctx),
 		OrderBy(orderBy.Field.String(), orderBy.Direction.String()),
 	)
 	if err != nil {
@@ -29,7 +29,7 @@ func (r *queryResolver) Characters(ctx context.Context, orderBy *models.Characte
 
 // Character is the resolver for the character field.
 func (r *queryResolver) Character(ctx context.Context, id uint) (*models.Character, error) {
-	characterEntity, err := services.NewCharacterService(r.DB, GetPreloads(ctx)).Character(id)
+	characterEntity, err := r.CharacterService.Character(id, GetPreloads(ctx))
 	if err != nil {
 		return nil, err //! check business error
 	}
@@ -38,22 +38,22 @@ func (r *queryResolver) Character(ctx context.Context, id uint) (*models.Charact
 
 // AverageAge is the resolver for the average_age field.
 func (r *queryResolver) AverageAge(ctx context.Context) (float64, error) {
-	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageAge(), 2), nil
+	return transformers.RoundFloat(r.CharacterService.AverageAge(), 2), nil
 }
 
 // AverageWeight is the resolver for the average_weight field.
 func (r *queryResolver) AverageWeight(ctx context.Context) (float64, error) {
-	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageWeight(), 2), nil
+	return transformers.RoundFloat(r.CharacterService.AverageWeight(), 2), nil
 }
 
 // AverageBeerConsumption is the resolver for the average_beer_consumption field.
 func (r *queryResolver) AverageBeerConsumption(ctx context.Context) (float64, error) {
-	return transformers.RoundFloat(services.NewCharacterService(r.DB, EmptyPreloads()).AverageBeerConsumption(), 2), nil
+	return transformers.RoundFloat(r.CharacterService.AverageBeerConsumption(), 2), nil
 }
 
 // Genders is the resolver for the genders field.
 func (r *queryResolver) Genders(ctx context.Context) (*models.Genders, error) {
-	genders := services.NewCharacterService(r.DB, EmptyPreloads()).Genders()
+	genders := r.CharacterService.Genders()
 	return &models.Genders{
 		Male:   genders.Male,
 		Female: genders.Female,

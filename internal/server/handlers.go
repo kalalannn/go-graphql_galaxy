@@ -23,14 +23,14 @@ const (
 )
 
 type ServerService struct {
-	Config *utils.Server
-	DB     *gorm.DB
+	config *utils.Server
+	db     *gorm.DB
 }
 
 func NewServerService(config *utils.Server, db *gorm.DB) *ServerService {
 	s := ServerService{
-		Config: config,
-		DB:     db,
+		config: config,
+		db:     db,
 	}
 	s.initHandlers()
 	return &s
@@ -38,21 +38,21 @@ func NewServerService(config *utils.Server, db *gorm.DB) *ServerService {
 
 func (s *ServerService) initHandlers() {
 	http.Handle(GraphQLPath, s.NewGraphQLHandler())
-	if s.Config.UsePlayground {
+	if s.config.UsePlayground {
 		http.Handle(PlaygroundPath, s.NewPlaygroundHandler(GraphQLPlaygroundTitle, GraphQLPath))
 	}
 }
 
 func (s *ServerService) RunServer() error {
-	host, port := s.Config.Host, s.Config.Port
+	host, port := s.config.Host, s.config.Port
 	log.Info("Serving GraphQL on: http://%s:%s/", host, port)
 	return http.ListenAndServe(host+":"+port, nil)
 }
 
 func (s *ServerService) NewGraphQLHandler() *handler.Server {
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
-		DB: s.DB,
-	}}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{
+		Resolvers: resolvers.NewResolver(s.db),
+	}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -62,13 +62,13 @@ func (s *ServerService) NewGraphQLHandler() *handler.Server {
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
 	// Security for production
-	if s.Config.UseIntrospection {
+	if s.config.UseIntrospection {
 		srv.Use(extension.Introspection{})
 	}
 
-	srv.Use(extension.FixedComplexityLimit(s.Config.GQLComplexityLimit))
+	srv.Use(extension.FixedComplexityLimit(s.config.GQLComplexityLimit))
 
-	srv.Use(NewDepthExtension(s.Config.GQLDepthLimit))
+	srv.Use(NewDepthExtension(s.config.GQLDepthLimit))
 
 	//! TODO add depth limit + rate limit + middleware
 

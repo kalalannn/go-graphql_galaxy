@@ -2,6 +2,7 @@ package services
 
 import (
 	"go-graphql_galaxy/internal/gorm/entities"
+	"go-graphql_galaxy/pkg/database"
 
 	"gorm.io/gorm"
 )
@@ -10,10 +11,10 @@ type NemesisService struct {
 	db *gorm.DB
 }
 
-func NewNemesisService(db *gorm.DB, preloads [][]string) *NemesisService {
-	s := NemesisService{}
-	s.db = PreloadDB(db, preloads)
-	return &s
+func NewNemesisService(db *gorm.DB) *NemesisService {
+	return &NemesisService{
+		db: db,
+	}
 }
 
 func (s *NemesisService) NemesesCount() int64 {
@@ -22,17 +23,19 @@ func (s *NemesisService) NemesesCount() int64 {
 	return count
 }
 
-func (s *NemesisService) Nemeses() ([]*entities.NemesisEntity, error) {
+func (s *NemesisService) Nemeses(preloads [][]string) ([]*entities.NemesisEntity, error) {
+	db := database.PreloadDB(s.db, preloads)
 	var nemeses []*entities.NemesisEntity
-	if err := s.db.Find(&nemeses).Error; err != nil {
+	if err := db.Find(&nemeses).Error; err != nil {
 		return nil, err
 	}
 	return nemeses, nil
 }
 
-func (s *NemesisService) Nemesis(id uint) (*entities.NemesisEntity, error) {
+func (s *NemesisService) Nemesis(id uint, preloads [][]string) (*entities.NemesisEntity, error) {
+	db := database.PreloadDB(s.db, preloads)
 	var nemesis entities.NemesisEntity
-	if err := s.db.First(&nemesis, id).Error; err != nil {
+	if err := db.First(&nemesis, id).Error; err != nil {
 		return nil, err
 	}
 	return &nemesis, nil

@@ -6,19 +6,18 @@ package resolvers
 
 import (
 	"context"
-	"go-graphql_galaxy/internal/gorm/services"
 	"go-graphql_galaxy/internal/graphql/models"
 	"go-graphql_galaxy/internal/transformers"
 )
 
 // SecretsCount is the resolver for the secrets_count field.
 func (r *queryResolver) SecretsCount(ctx context.Context) (int64, error) {
-	return services.NewSecretService(r.DB, EmptyPreloads()).SecretsCount(), nil
+	return r.SecretService.SecretsCount(), nil
 }
 
 // Secrets is the resolver for the secrets field.
 func (r *queryResolver) Secrets(ctx context.Context) ([]*models.Secret, error) {
-	secretEntities, err := services.NewSecretService(r.DB, GetPreloads(ctx)).Secrets()
+	secretEntities, err := r.SecretService.Secrets(GetPreloads(ctx))
 	if err != nil {
 		return nil, err //! check business error
 	}
@@ -27,7 +26,7 @@ func (r *queryResolver) Secrets(ctx context.Context) ([]*models.Secret, error) {
 
 // Secret is the resolver for the secret field.
 func (r *queryResolver) Secret(ctx context.Context, id uint) (*models.Secret, error) {
-	secretEntity, err := services.NewSecretService(r.DB, GetPreloads(ctx)).Secret(id)
+	secretEntity, err := r.SecretService.Secret(id, GetPreloads(ctx))
 	if err != nil {
 		return nil, err //! check business error
 	}

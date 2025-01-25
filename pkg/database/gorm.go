@@ -2,6 +2,7 @@ package database
 
 import (
 	"go-graphql_galaxy/pkg/log"
+	"strings"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -15,4 +16,12 @@ func ConnectDB(dsn string) (*gorm.DB, error) {
 	}
 	log.Info("connected to database")
 	return db, nil
+}
+
+func PreloadDB(db *gorm.DB, preloads [][]string) *gorm.DB {
+	for _, preload := range preloads {
+		preloadStr := strings.Join(preload, ".")
+		db = db.Preload(preloadStr)
+	}
+	return db
 }

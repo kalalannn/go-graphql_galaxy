@@ -2,6 +2,7 @@ package services
 
 import (
 	"go-graphql_galaxy/internal/gorm/entities"
+	"go-graphql_galaxy/pkg/database"
 
 	"gorm.io/gorm"
 )
@@ -10,10 +11,10 @@ type CharacterService struct {
 	db *gorm.DB
 }
 
-func NewCharacterService(db *gorm.DB, preloads [][]string) *CharacterService {
-	s := CharacterService{}
-	s.db = PreloadDB(db, preloads)
-	return &s
+func NewCharacterService(db *gorm.DB) *CharacterService {
+	return &CharacterService{
+		db: db,
+	}
 }
 
 func (s *CharacterService) CharactersCount() int64 {
@@ -22,17 +23,19 @@ func (s *CharacterService) CharactersCount() int64 {
 	return count
 }
 
-func (s *CharacterService) Characters(orderBy string) ([]*entities.CharacterEntity, error) {
+func (s *CharacterService) Characters(preloads [][]string, orderBy string) ([]*entities.CharacterEntity, error) {
+	db := database.PreloadDB(s.db, preloads)
 	var characters []*entities.CharacterEntity
-	if err := s.db.Order(orderBy).Find(&characters).Error; err != nil {
+	if err := db.Order(orderBy).Find(&characters).Error; err != nil {
 		return nil, err
 	}
 	return characters, nil
 }
 
-func (s *CharacterService) Character(id uint) (*entities.CharacterEntity, error) {
+func (s *CharacterService) Character(id uint, preloads [][]string) (*entities.CharacterEntity, error) {
+	db := database.PreloadDB(s.db, preloads)
 	var character entities.CharacterEntity
-	if err := s.db.First(&character, id).Error; err != nil {
+	if err := db.First(&character, id).Error; err != nil {
 		return nil, err
 	}
 	return &character, nil
