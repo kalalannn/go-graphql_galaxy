@@ -13,7 +13,7 @@ import (
 
 // ServerTime is the resolver for the server_time field.
 func (r *queryResolver) ServerTime(ctx context.Context) (string, error) {
-	return time.Now().Format(transformers.TimeFormat), nil
+	return *transformers.TransformTimeToString(time.Now()), nil
 }
 
 // HealthCheck is the resolver for the health_check field.

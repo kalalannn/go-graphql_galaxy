@@ -2,9 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"os"
-
-	"go-graphql_galaxy/pkg/log"
 
 	"gopkg.in/yaml.v3"
 )
@@ -16,6 +15,7 @@ type Server struct {
 	UseIntrospection   bool   `yaml:"use_introspection"`
 	GQLComplexityLimit int    `yaml:"gql_complexity_limit"`
 	GQLDepthLimit      int    `yaml:"gql_depth_limit"`
+	PingPath           string `yaml:"ping_path"`
 }
 
 type Database struct {
@@ -53,9 +53,11 @@ func MustLoadConfig() *Config {
 		configPath = fromEnv
 	}
 
+	dir, _ := os.Getwd()
+	log.Printf("Using config_path: %s, wd: %s", configPath, dir)
 	config, err := loadConfig(configPath)
 	if err != nil {
-		log.Fatal("wrong config (%s): %v", configPath, err)
+		log.Fatalf("wrong config (%s): %v", configPath, err)
 	}
 	return config
 }

@@ -38,3 +38,13 @@ generate: build_generate
 	./bin/generate
 # go get github.com/99designs/gqlgen
 # go run github.com/99designs/gqlgen generate
+
+integration_test:
+	APP_CONFIG_PATH=../config/local.yaml go test tests/integration_test.go
+
+integration_test_verbose:
+	APP_CONFIG_PATH=../config/local.yaml go test tests/integration_test.go -v
+
+genqlient_generate:
+	go get github.com/Khan/genqlient
+	go run github.com/Khan/genqlient

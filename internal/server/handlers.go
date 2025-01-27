@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"go-graphql_galaxy/internal/graphql/generated"
 	"go-graphql_galaxy/internal/graphql/resolvers"
 	"go-graphql_galaxy/pkg/log"
@@ -20,6 +21,8 @@ const (
 	GraphQLPlaygroundTitle = "GraphQL Playground"
 	PlaygroundPath         = "/"
 	GraphQLPath            = "/query"
+	PingPath               = "/ping"
+	PingMsg                = "pong"
 )
 
 type ServerService struct {
@@ -41,6 +44,7 @@ func (s *ServerService) initHandlers() {
 	if s.config.UsePlayground {
 		http.Handle(PlaygroundPath, s.NewPlaygroundHandler(GraphQLPlaygroundTitle, GraphQLPath))
 	}
+	http.HandleFunc(PingPath, s.NewPingHandler())
 }
 
 func (s *ServerService) RunServer() error {
@@ -82,4 +86,15 @@ func (s *ServerService) NewGraphQLHandler() *handler.Server {
 
 func (s *ServerService) NewPlaygroundHandler(title, path string) http.HandlerFunc {
 	return playground.Handler("GraphQL", "/query")
+}
+
+func (s *ServerService) NewPingHandler() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		response := map[string]string{"message": PingMsg}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
+	}
 }

@@ -1,0 +1,10 @@
+# Default genqlient config; for full documentation see:
+# https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+schema:
+  - internal/graphql/schemas/*.graphql
+operations:
+  - internal/genqlient/operations/*.graphql
+generated: internal/genqlient/generated/generated.go
+bindings:
+  Int64:
+    type: int64

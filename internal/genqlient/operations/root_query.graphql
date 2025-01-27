@@ -1,0 +1,20 @@
+query RootQuery{
+    health_check
+    server_time
+    average_age
+    average_beer_consumption
+    average_weight
+    characters_count
+    genders {
+        male
+        female
+        other
+    }
+    average_nemeses_years
+    nemeses_count
+    alive_nemeses {
+        alive
+        dead
+    }
+    secrets_count
+}
