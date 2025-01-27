@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-graphql_galaxy/internal/app"
 	"go-graphql_galaxy/internal/genqlient/generated"
+	"go-graphql_galaxy/internal/server"
 	"go-graphql_galaxy/internal/transformers"
 	"go-graphql_galaxy/pkg/client"
 	"go-graphql_galaxy/pkg/utils"
@@ -15,6 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const PingTimeout = 5 * time.Second
+
 var Config *utils.Config
 var Client graphql.Client
 var Ctx = context.Background()
@@ -25,14 +28,14 @@ func TestMain(m *testing.M) {
 	}()
 
 	Config = utils.MustLoadConfig()
-	url := client.CreateURL(Config.Server.Host, Config.Server.Port, Config.Server.PingPath)
+	host, port := Config.Server.Host, Config.Server.Port
 
-	err := client.PingServer(url, 5*time.Second)
+	err := client.PingServer(client.CreateURL(host, port, server.PingPath), PingTimeout)
 	if err != nil {
 		panic("app run timeout")
 	}
 
-	Client = graphql.NewClient("http://localhost:8080/query", http.DefaultClient)
+	Client = graphql.NewClient(client.CreateURL(host, port, server.GraphQLPath), http.DefaultClient)
 
 	m.Run()
 }

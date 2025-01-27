@@ -15,7 +15,6 @@ type Server struct {
 	UseIntrospection   bool   `yaml:"use_introspection"`
 	GQLComplexityLimit int    `yaml:"gql_complexity_limit"`
 	GQLDepthLimit      int    `yaml:"gql_depth_limit"`
-	PingPath           string `yaml:"ping_path"`
 }
 
 type Database struct {

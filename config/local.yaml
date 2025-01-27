@@ -6,7 +6,6 @@ server:
   use_introspection: true
   gql_complexity_limit: 100
   gql_depth_limit: 10
-  ping_path: "/ping"
 
 database:
   user: postgres
