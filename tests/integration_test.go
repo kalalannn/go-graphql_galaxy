@@ -8,7 +8,11 @@ import (
 	"go-graphql_galaxy/internal/transformers"
 	"go-graphql_galaxy/pkg/client"
 	"go-graphql_galaxy/pkg/utils"
+	"log"
 	"net/http"
+	"os"
+	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -20,11 +24,11 @@ const PingTimeout = 5 * time.Second
 
 var Config *utils.Config
 var Client graphql.Client
-var Ctx = context.Background()
 
 func TestMain(m *testing.M) {
+	var wg sync.WaitGroup
 	go func() {
-		app.NewApp().Run()
+		app.NewApp().Run(&wg)
 	}()
 
 	Config = utils.MustLoadConfig()
@@ -38,6 +42,12 @@ func TestMain(m *testing.M) {
 	Client = graphql.NewClient(client.CreateURL(host, port, server.GraphQLPath), http.DefaultClient)
 
 	m.Run()
+
+	log.Println("Sent server shutdown.")
+	p, _ := os.FindProcess(os.Getpid())
+	_ = p.Signal(syscall.SIGTERM)
+	wg.Wait()
+	os.Exit(0)
 }
 
 const (
@@ -63,7 +73,7 @@ const (
 
 func TestRoot(t *testing.T) {
 	// act
-	resp, err := generated.RootQuery(Ctx, Client)
+	resp, err := generated.RootQuery(context.Background(), Client)
 	if err != nil {
 		t.Fatalf("GraphQL request error: %v", err)
 	}

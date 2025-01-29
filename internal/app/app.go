@@ -5,6 +5,7 @@ import (
 	"go-graphql_galaxy/pkg/database"
 	"go-graphql_galaxy/pkg/log"
 	"go-graphql_galaxy/pkg/utils"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -32,10 +33,10 @@ func NewApp() *App {
 	}
 }
 
-func (a *App) Run() {
+func (a *App) Run(wg *sync.WaitGroup) {
 	// Init Server
 	serverService := server.NewServerService(&a.config.Server, a.db)
 
 	// Serve
-	serverService.RunServer()
+	serverService.RunServer(wg)
 }

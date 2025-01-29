@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"go-graphql_galaxy/internal/graphql/generated"
 	"go-graphql_galaxy/internal/graphql/resolvers"
-	"go-graphql_galaxy/pkg/log"
 	"go-graphql_galaxy/pkg/utils"
 	"net/http"
 
@@ -14,48 +13,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gorm.io/gorm"
 )
 
-const (
-	GraphQLPlaygroundTitle = "GraphQL Playground"
-	PlaygroundPath         = "/"
-	GraphQLPath            = "/query"
-	PingPath               = "/ping"
-	PingMsg                = "pong"
-)
-
-type ServerService struct {
-	config *utils.Server
-	db     *gorm.DB
-}
-
-func NewServerService(config *utils.Server, db *gorm.DB) *ServerService {
-	s := ServerService{
-		config: config,
-		db:     db,
-	}
-	s.initHandlers()
-	return &s
-}
-
-func (s *ServerService) initHandlers() {
-	http.Handle(GraphQLPath, s.NewGraphQLHandler())
-	if s.config.UsePlayground {
-		http.Handle(PlaygroundPath, s.NewPlaygroundHandler(GraphQLPlaygroundTitle, GraphQLPath))
-	}
-	http.HandleFunc(PingPath, s.NewPingHandler())
-}
-
-func (s *ServerService) RunServer() error {
-	host, port := s.config.Host, s.config.Port
-	log.Info("Serving GraphQL on: http://%s:%s/", host, port)
-	return http.ListenAndServe(host+":"+port, nil)
-}
-
-func (s *ServerService) NewGraphQLHandler() *handler.Server {
+func NewGraphQLHandler(config *utils.Server, resolver *resolvers.Resolver) *handler.Server {
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{
-		Resolvers: resolvers.NewResolver(s.db),
+		Resolvers: resolver,
 	}))
 
 	srv.AddTransport(transport.Options{})
@@ -66,13 +28,13 @@ func (s *ServerService) NewGraphQLHandler() *handler.Server {
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
 	// Security for production
-	if s.config.UseIntrospection {
+	if config.UseIntrospection {
 		srv.Use(extension.Introspection{})
 	}
 
-	srv.Use(extension.FixedComplexityLimit(s.config.GQLComplexityLimit))
+	srv.Use(extension.FixedComplexityLimit(config.GQLComplexityLimit))
 
-	srv.Use(NewDepthExtension(s.config.GQLDepthLimit))
+	srv.Use(NewDepthExtension(config.GQLDepthLimit))
 
 	//! TODO add depth limit + rate limit + middleware
 
@@ -84,17 +46,17 @@ func (s *ServerService) NewGraphQLHandler() *handler.Server {
 	return srv
 }
 
-func (s *ServerService) NewPlaygroundHandler(title, path string) http.HandlerFunc {
-	return playground.Handler("GraphQL", "/query")
+func NewPlaygroundHandler(title, gqlPath string) http.Handler {
+	return playground.Handler(title, gqlPath)
 }
 
-func (s *ServerService) NewPingHandler() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func NewPingHandler(pingMsg string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		response := map[string]string{"message": PingMsg}
+		response := map[string]string{"message": pingMsg}
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		}
-	}
+	})
 }

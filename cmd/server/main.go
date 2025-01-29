@@ -2,8 +2,11 @@ package main
 
 import (
 	"go-graphql_galaxy/internal/app"
+	"sync"
 )
 
 func main() {
-	app.NewApp().Run()
+	var wg sync.WaitGroup
+	app.NewApp().Run(&wg)
+	wg.Wait()
 }
