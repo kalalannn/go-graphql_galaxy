@@ -17,7 +17,7 @@ func (r *queryResolver) SecretsCount(ctx context.Context) (int64, error) {
 
 // Secrets is the resolver for the secrets field.
 func (r *queryResolver) Secrets(ctx context.Context, orderBy *models.SecretOrderBy, pagination *models.PaginationInput) ([]*models.Secret, error) {
-	limit, offset, err := GetPagination(pagination.Limit, pagination.Offset)
+	limit, offset, err := GetPagination(pagination)
 	if err != nil {
 		return nil, err
 	}

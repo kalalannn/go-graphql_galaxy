@@ -17,7 +17,7 @@ func (r *queryResolver) CharactersCount(ctx context.Context) (int64, error) {
 
 // Characters is the resolver for the characters field.
 func (r *queryResolver) Characters(ctx context.Context, orderBy *models.CharacterOrderBy, pagination *models.PaginationInput) ([]*models.Character, error) {
-	limit, offset, err := GetPagination(pagination.Limit, pagination.Offset)
+	limit, offset, err := GetPagination(pagination)
 	if err != nil {
 		return nil, err
 	}

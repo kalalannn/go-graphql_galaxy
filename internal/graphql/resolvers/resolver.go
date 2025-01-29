@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-graphql_galaxy/internal/gorm/services"
 	"go-graphql_galaxy/internal/gqlcontext"
+	"go-graphql_galaxy/internal/graphql/models"
 
 	"gorm.io/gorm"
 )
@@ -39,7 +40,12 @@ func GetOrderBy(field, direction string) string {
 	return fmt.Sprintf("%s %s", field, direction)
 }
 
-func GetPagination(limit, offset *int32) (*int32, *int32, error) {
+// func GetPagination(limit, offset *int32) (*int32, *int32, error) {
+func GetPagination(pagination *models.PaginationInput) (*int32, *int32, error) {
+	if pagination == nil {
+		return nil, nil, nil
+	}
+	limit, offset := pagination.Limit, pagination.Offset
 	if offset != nil && limit == nil {
 		return nil, nil, fmt.Errorf("limit is required when offset is provided")
 	}

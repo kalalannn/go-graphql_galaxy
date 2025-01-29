@@ -17,7 +17,7 @@ func (r *queryResolver) NemesesCount(ctx context.Context) (int64, error) {
 
 // Nemeses is the resolver for the nemeses field.
 func (r *queryResolver) Nemeses(ctx context.Context, orderBy *models.NemesisOrderBy, pagination *models.PaginationInput) ([]*models.Nemesis, error) {
-	limit, offset, err := GetPagination(pagination.Limit, pagination.Offset)
+	limit, offset, err := GetPagination(pagination)
 	if err != nil {
 		return nil, err
 	}
