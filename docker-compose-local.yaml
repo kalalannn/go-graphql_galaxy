@@ -1,0 +1,38 @@
+networks:
+  go-graphql_galaxy-local:
+    driver: bridge
+
+services:
+  app_local:
+    image: go-graphql_galaxy-app
+    container_name: go-graphql_galaxy_app-local
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - go-graphql_galaxy-local
+    ports:
+      - ${DOCKER_APP_LOCAL_PORT}:${APP_LOCAL_PORT}
+    environment:
+      - APP_CONFIG_PATH=/config/compose-local.yaml
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 3s
+      timeout: 10s
+      retries: 5
+      start_period: 5s  
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - go-graphql_galaxy-local
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+volumes:
+  pgdata:

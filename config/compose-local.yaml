@@ -1,0 +1,17 @@
+env: local
+server:
+  host: 0.0.0.0
+  port: 8080
+  use_playground: true
+  use_introspection: true
+  gql_complexity_limit: 100
+  gql_depth_limit: 10
+
+database:
+  user: postgres
+  password: postgres
+  host: db
+  port: 5432
+  db_name: postgres
+  sslmode: disable
+  timezone: UTC

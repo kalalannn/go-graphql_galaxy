@@ -1,0 +1,14 @@
+networks:
+  go-graphql_galaxy-galaxy:
+    driver: bridge
+
+services:
+  app_galaxy:
+    image: go-graphql_galaxy-app
+    container_name: go-graphql_galaxy_app-galaxy
+    networks:
+      - go-graphql_galaxy-galaxy
+    ports:
+      - ${DOCKER_APP_GALAXY_PORT}:${APP_LOCAL_PORT}
+    environment:
+      - APP_CONFIG_PATH=/config/compose-galaxy.yaml
