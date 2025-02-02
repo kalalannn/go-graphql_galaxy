@@ -8,11 +8,6 @@ and `GORM` for database interactions.
 It supports containerization with `Docker`
 and deployment to a `Kubernetes` cluster.
 
-## API Endpoints
-- **`GET /`**: GraphQL Playground
-- **`GET /ping`**: Server healthcheck
-- **`GET /graphql`**: GraphQL endpoint
-
 ## Get started
 You can use this project (clone required for 2-5) in the following ways (ordered by difficulty):
 ### 1. Deployed instance in Kubernetes on GCP.
@@ -54,7 +49,7 @@ make mod_download local_run_galaxy
 </details>
 
 ### 4. Docker with an internal database `postgres`. Config: [compose-local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-local.yaml)
-> Note: always available
+> Note: always available, port=8081
 <details>
 <summary><a>Expand ... </a></summary>
 
@@ -91,6 +86,32 @@ make down_db_only
 make clean_db      # if needed
 ```
 </details>
+
+## API Endpoints
+- **`GET /`**: GraphQL Playground
+- **`GET /ping`**: Server healthcheck
+- **`GET /graphql`**: GraphQL endpoint
+
+## Configuration
+The service uses the `APP_CONFIG_PATH` environment variable to locate the configuration file. The configuration file should be structured as follows:
+```yaml
+env: local                     # Current environment (used for logging, etc.)
+server:
+  host: 0.0.0.0                # HTTP server host
+  port: 8080                   # HTTP server port
+  use_playground: true         # use playground endpoint ?
+  use_introspection: true      # enable introspection ?
+  gql_complexity_limit: 100    # graphql complexity limit
+  gql_depth_limit: 10          # max request depth limit >=
+database:
+  user: postgres               # DB_USER
+  password: postgres           # DB_PASSWORD
+  host: localhost              # DB_HOST
+  port: 5432                   # DB_PORT
+  db_name: postgres            # DB_NAME
+  sslmode: disable             # SSL policy
+  timezone: UTC                # DB timezone
+```
 
 ## GraphQL
 > Note: Check introspection for better experience
@@ -291,19 +312,518 @@ Foreign keys:
 ```
 </details>
 
-<!-- ## Examples
+## Examples
 ### RootQuery
+<details>
+<summary>Expand ...</summary>
+
 * Request:
 ```graphql
 query RootQuery {
-    server_time
-    health_check
-    characters_count
-    average_age
-    average_weight
-    average_beer_consumption
-    nemeses_count
-    average_nemeses_years
-    secrets_count
+  server_time
+  health_check
+  characters_count
+  average_age
+  average_weight
+  average_beer_consumption
+  nemeses_count
+  average_nemeses_years
+  secrets_count
+  genders {
+    male
+    female
+    other
+  }
+  alive_nemeses {
+    alive
+    dead
+  }
 }
-``` -->
+```
+* Response:
+```json
+{
+  "data": {
+    "server_time": "2025-02-02T13:54:06Z",
+    "health_check": true,
+    "characters_count": 11,
+    "average_age": 40.91,
+    "average_weight": 104.03,
+    "average_beer_consumption": 134527.91,
+    "nemeses_count": 13,
+    "average_nemeses_years": 113.75,
+    "secrets_count": 25,
+    "genders": {
+      "male": 6,
+      "female": 2,
+      "other": 3
+    },
+    "alive_nemeses": {
+      "alive": 11,
+      "dead": 2
+    }
+  }
+}
+```
+</details>
+
+### GetOnes
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+query GetOnes {
+  character(id: 2) {
+    id
+    ability
+    beer_consumption
+    born
+    gender
+    in_space_since
+    knows_the_answer
+    minimal_distance
+    name
+    weight
+  }
+  nemesis(id: 8) {
+    id
+    years
+    is_alive
+  }
+  secret(id: 7) {
+    id
+    secret_code
+  }
+}
+```
+* Response:
+```json
+{
+  "data": {
+    "character": {
+      "id": "2",
+      "ability": "mathematician",
+      "beer_consumption": 6704,
+      "born": "1994-12-14T00:00:00Z",
+      "gender": "female",
+      "in_space_since": "2014-12-24T17:21:50Z",
+      "knows_the_answer": true,
+      "minimal_distance": 6.2,
+      "name": "Trillian",
+      "weight": 49
+    },
+    "nemesis": {
+      "id": "8",
+      "years": 2,
+      "is_alive": true
+    },
+    "secret": {
+      "id": "7",
+      "secret_code": 9449428626
+    }
+  }
+}
+```
+</details>
+
+### NotFoundOnes
+> Note: error message should be different (regarding to business logic)
+
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+query NotFoundOnes {
+  character(id: 9999) {
+    id
+  }
+  nemesis(id: 9999) {
+    id
+    years
+    is_alive
+  }
+  secret(id: 9999) {
+    id
+  }
+}
+```
+* Response:
+```json
+{
+  "errors": [
+    {
+      "message": "record not found",
+      "path": [
+        "character"
+      ]
+    },
+    {
+      "message": "record not found",
+      "path": [
+        "secret"
+      ]
+    },
+    {
+      "message": "record not found",
+      "path": [
+        "nemesis"
+      ]
+    }
+  ],
+  "data": {
+    "character": null,
+    "nemesis": null,
+    "secret": null
+  }
+}
+```
+</details>
+
+### SortPaginationQuery
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+query SortPaginationQuery {
+  characters(
+    orderBy: { field: name, direction: ASC },
+    pagination: {limit: 1})
+  {
+    id
+    name
+    beer_consumption
+  }
+  nemeses(
+    orderBy: {field: years, direction: ASC},
+    pagination: {limit: 2})
+  {
+    id
+    years
+  }
+  secrets(
+    orderBy: {field: secret_code, direction: DESC},
+    pagination: {limit: 3})
+  {
+    id
+    secret_code
+  }
+}
+```
+* Response:
+```json
+{
+  "data": {
+    "characters": [
+      {
+        "id": "9",
+        "name": "Alice Beeblebrox",
+        "beer_consumption": 64
+      }
+    ],
+    "nemeses": [
+      {
+        "id": "8",
+        "years": 2
+      },
+      {
+        "id": "2",
+        "years": 28
+      }
+    ],
+    "secrets": [
+      {
+        "id": "7",
+        "secret_code": 9449428626
+      },
+      {
+        "id": "6",
+        "secret_code": 9442445871
+      },
+      {
+        "id": "24",
+        "secret_code": 8424742058
+      }
+    ]
+  }
+}
+```
+</details>
+
+### RecursiveChildren
+<details>
+<summary>Expand ...</summary>
+
+* SQL:
+```sql
+SELECT
+  c.id AS c_id, c.name,
+  n.id AS n_id, n.is_alive, n.years,
+  s.id AS s_id, s.secret_code AS s_code
+FROM character c
+  JOIN nemesis n ON c.id = n.character_id
+  JOIN secret  s ON n.id = s.nemesis_id where c.id = 12;
+
+ c_id |  name   | n_id | is_alive | years | s_id |   s_code
+------+---------+------+----------+-------+------+------------
+   12 | Frankie |    7 | t        |   953 |   13 | 5467717091
+   12 | Frankie |    7 | t        |   953 |   14 | 4166492176
+   12 | Frankie |    8 | t        |     2 |   15 | 6271440484
+   12 | Frankie |    8 | t        |     2 |   16 | 6275689247
+```
+* Request:
+```graphql
+query RecursiveChildren {
+  character(id: 12) {
+    id
+    nemeses{
+      id
+      secrets{
+        id
+        nemesis{
+          id
+          character{
+            id
+          }
+        }
+      }
+    }
+  }
+}
+```
+* Response:
+```json
+{
+  "data": {
+    "character": {
+      "id": "12",
+      "nemeses": [
+        {
+          "id": "7",
+          "secrets": [
+            {
+              "id": "13",
+              "nemesis": {
+                "id": "7",
+                "character": {
+                  "id": "12"
+                }
+              }
+            },
+            {
+              "id": "14",
+              "nemesis": {
+                "id": "7",
+                "character": {
+                  "id": "12"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "8",
+          "secrets": [
+            {
+              "id": "15",
+              "nemesis": {
+                "id": "8",
+                "character": {
+                  "id": "12"
+                }
+              }
+            },
+            {
+              "id": "16",
+              "nemesis": {
+                "id": "8",
+                "character": {
+                  "id": "12"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+</details>
+
+### MaxPossibleDepth
+> Note: configurable via `config.server.gql_depth_limit`
+
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+query MaxPossibleDepth {
+  character(id: 2) {
+    id
+    nemeses {
+      id
+      character{
+        id
+        nemeses{
+          id
+          character{
+            id
+            nemeses{
+              id
+              character{
+                id
+                nemeses{
+                  id
+                  character{
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+* Response:
+```json
+{
+  "data": {
+    "character": {
+      "id": "2",
+      "nemeses": [
+        {
+          "id": "1",
+          "character": {
+            "id": "2",
+            "nemeses": [
+              {
+                "id": "1",
+                "character": {
+                  "id": "2",
+                  "nemeses": [
+                    {
+                      "id": "1",
+                      "character": {
+                        "id": "2",
+                        "nemeses": [
+                          {
+                            "id": "1",
+                            "character": {
+                              "id": "2"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+```
+</details>
+
+### DepthLimitError
+> Note: configurable via `config.server.gql_depth_limit`
+
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+query DepthLimitError {
+  character(id: 2) {
+    id
+    nemeses {
+      id
+      character{
+        id
+        nemeses{
+          id
+          character{
+            id
+            nemeses{
+              id
+              character{
+                id
+                nemeses{
+                  id
+                  character{
+                    id
+                    nemeses{ // depth >= MaxDepthLimit
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+* Response:
+```json
+{
+  "errors": [
+    {
+      "message": "Max depth limit exceeded >= 10",
+      "extensions": {
+        "code": "DEPTH_LIMIT_EXCEEDED"
+      }
+    }
+  ],
+  "data": null
+}
+```
+</details>
+
+<!--
+### Template
+<details>
+<summary>Expand ...</summary>
+
+* Request:
+```graphql
+```
+* Response:
+```json
+```
+</details>
+-->
+
+## New entities guide (howto add new entity?)
+1. Create DB table
+2. Create GraphQL schema into `internal/graphql/schemas`
+3. Regenerate Go code (`models` && `resolvers`) with `make generate`
+4. Implement GORM `entity model` && `service` in `internal/gorm`
+5. Implement `<entity>_transformer.go`
+6. Implement generated `<entity>.resolvers.go`
+
+## Deployment guide
+* Local build
+  1. Build docker image with `make build_app_image`
+  2. Tag and push image to your `Cloud Artifact Registry`
+* Cloud build
+  1. Setup Cloud image build (`CD/CI`)
+
+Finally Deploy `App && Service` to `Kubernetes Cluster` using `kubectl apply -f .kube/`
+
+## Future Development (TODOs)
+* Unit tests
+* Extend integration tests
+* Mutations
