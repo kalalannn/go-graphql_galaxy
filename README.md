@@ -1,4 +1,4 @@
-# GraphQL API microservice using GORM, gqlgen and genqlient
+# GraphQL API microservice using GORM and gqlgen
 
 ### Overview
 This project provides a `GraphQL` API microservice built with `Go`,
@@ -7,6 +7,11 @@ utilizing `gqlgen` for code generation,
 and `GORM` for database interactions.
 It supports containerization with `Docker`
 and deployment to a `Kubernetes` cluster.
+
+## API Endpoints
+- **`GET /`**: GraphQL Playground
+- **`GET /ping`**: Server healthcheck
+- **`GET /graphql`**: GraphQL endpoint
 
 ## Get started
 You can use this project (clone required for 2-5) in the following ways (ordered by difficulty):
@@ -21,9 +26,15 @@ Playground: [http://34.147.13.187](http://34.147.13.187)
 
 * Prerequisite: `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
-<pre><code>make build_app_image up_galaxy</code></pre>
+
+```bash
+make build_app_image up_galaxy
+```
 * Finish (Down)
-<pre><code>make down_galaxy</code></pre>
+
+```bash
+make down_galaxy
+```
 </details>
 
 ### 3. Locally with an external database `galaxy`. Config: <u>[local-galaxy.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local-galaxy.yaml)</u>
@@ -33,9 +44,13 @@ Playground: [http://34.147.13.187](http://34.147.13.187)
 
 * Prerequisite: `go >= 1.23`
 * Start (Up)
-<pre><code>make mod_download local_run_galaxy</code></pre>
+```bash
+make mod_download local_run_galaxy
+```
 * Finish (Down)
-<pre><code>^C</code></pre>
+```bash
+^C
+```
 </details>
 
 ### 4. Docker with an internal database `postgres`. Config: <u>[compose-local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-local.yaml)</u>
@@ -45,13 +60,16 @@ Playground: [http://34.147.13.187](http://34.147.13.187)
 
 * Prerequisite: `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
-<pre><code class="language-bash">make up_local
-make migrate_db # Run once
-</code></pre>
+```bash
+make up_local
+make migrate_db    # Run once
+```
+
 * Finish (Down)
-<pre><code class="language-bash">make down_local
-make clean_db # if needed
-</code></pre>
+```bash
+make down_local
+make clean_db      # if needed
+```
 </details>
 
 ### 5. Locally with an internal database `postgres`. Config: <u>[local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local.yaml)</u>
@@ -61,21 +79,18 @@ make clean_db # if needed
 
 * Prerequisite: `go >= 1.23`, `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
-<pre><code class="language-bash">make up_db_only
+```
+make up_db_only
 make migrate_db    # Run once
 make local_run
-</code></pre>
+```
 * Finish (Down)
-<pre><code class="language-bash">^C
+```bash
+^C
 make down_db_only
 make clean_db      # if needed
-</code></pre>
+```
 </details>
-
-## API Endpoints
-- **`GET /`**: GraphQL Playground
-- **`GET /ping`**: Server healthcheck
-- **`GET /graphql`**: GraphQL endpoint
 
 ## GraphQL
 > Note: Check introspection for better experience
@@ -84,7 +99,9 @@ make clean_db      # if needed
 ### Entities
 <details>
 <summary>Click to expand</summary>
-<pre><code class="language-graphql">type Character {
+
+```graphql
+type Character {
   id: ID!
   name: String!
   gender: String
@@ -122,13 +139,15 @@ type Secret {
   secret_code: Int64!
   nemesis: Nemesis!
 }
-</code></pre>
+```
 </details>
 
 ### Queries
 <details>
 <summary>Click to expand</summary>
-<pre><code class="language-graphql">type Query {
+
+```graphql
+type Query {
   server_time: String!
   health_check: Boolean!
   # Character
@@ -159,14 +178,16 @@ type Secret {
   ): [Secret!]!
   secret(id: ID!): Secret
 }
-</code></pre>
+```
 </details>
 
 
 ## Project structure
 <details>
 <summary> Click to expand </summary>
-<pre><code>├── cmd                                # entrypoints (main)
+
+```bash
+├── cmd                                # entrypoints (main)
 │   ├── generate                       # GQLGen go code generator
 │   └── server                         # GraphQL server main
 ├── config                             # Server configuration files for environments
@@ -207,7 +228,7 @@ type Secret {
 │   └── ...
 └── tests                              # Integration tests folder
     └── ...
-</code></pre>
+```
 </details>
 
 ## Data structure
@@ -215,7 +236,9 @@ type Secret {
 
 <details>
 <summary>Click to expand</summary>
-<pre><code class="language-sql">    Column        |         Type         | NULLable?
+    
+```sql
+    Column        |         Type         | NULLable?
 ------------------+----------------------+----------
  id               | integer              | not null
  name             | text                 | not null
@@ -230,13 +253,15 @@ type Secret {
 ----------------------------------------------------
 Referenced by:
   TABLE "nemesis" CONSTRAINT "character" FOREIGN KEY (character_id) REFERENCES "character"(id) NOT VALID
-</code></pre>
+```
 </details>
 
 ### DB Table: `Nemesis`, GORM model: <u>[Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/nemesis.go)</u>, GraphQL schema: <u>[Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/nemesis.graphql#L1-L7)</u>
 <details>
 <summary>Click to expand</summary>
-<pre><code class="language-sql">    Column    |  Type   | NULLable?
+    
+```sql
+    Column    |  Type   | NULLable?
 --------------+---------+----------
  is_alive     | boolean | not null 
  years        | integer |
@@ -247,13 +272,15 @@ Foreign keys:
     "character" FOREIGN KEY (character_id) REFERENCES "character"(id) NOT VALID
 Referenced by:
     TABLE "secret" CONSTRAINT "nemesis" FOREIGN KEY (nemesis_id) REFERENCES nemesis(id)
-</code></pre>
+```
 </details>
 
 ### DB Table: `Secret`, GORM model: <u>[Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/secret.go)</u>, GraphQL schema: <u>[Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/secret.graphql#L1-L5)</u>
 <details>
 <summary>Click to expand</summary>
-<pre><code class="language-sql">   Column    |  Type   | NULLable?
+   
+```sql
+   Column    |  Type   | NULLable?
 -------------+---------+----------
  id          | integer | not null 
  secret_code | bigint  | not null 
@@ -261,7 +288,7 @@ Referenced by:
 ----------------------------------
 Foreign keys:
     "nemesis" FOREIGN KEY (nemesis_id) REFERENCES nemesis(id)
-</code></pre>
+```
 </details>
 
 <!-- ## Examples
