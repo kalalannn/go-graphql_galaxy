@@ -19,10 +19,10 @@ You can use this project (clone required for 2-5) in the following ways (ordered
 > Note: possible unavailable (deployment or DB)
 
 Playground: [http://34.147.13.187](http://34.147.13.187)
-### 2. Docker with an external database `galaxy`. Config: <u>[compose-galaxy.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-galaxy.yaml)</u>
+### 2. Docker with an external database `galaxy`. Config: [compose-galaxy.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-galaxy.yaml)
 > Note: possible unavailable (DB)
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 * Prerequisite: `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
@@ -37,10 +37,10 @@ make down_galaxy
 ```
 </details>
 
-### 3. Locally with an external database `galaxy`. Config: <u>[local-galaxy.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local-galaxy.yaml)</u>
+### 3. Locally with an external database `galaxy`. Config: [local-galaxy.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local-galaxy.yaml)
 > Note: possible unavailable (DB)
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 * Prerequisite: `go >= 1.23`
 * Start (Up)
@@ -53,10 +53,10 @@ make mod_download local_run_galaxy
 ```
 </details>
 
-### 4. Docker with an internal database `postgres`. Config: <u>[compose-local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-local.yaml)</u>
+### 4. Docker with an internal database `postgres`. Config: [compose-local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/compose-local.yaml)
 > Note: always available
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 * Prerequisite: `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
@@ -72,10 +72,10 @@ make clean_db      # if needed
 ```
 </details>
 
-### 5. Locally with an internal database `postgres`. Config: <u>[local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local.yaml)</u>
+### 5. Locally with an internal database `postgres`. Config: [local.yaml](https://github.com/kalalannn/go-graphql_galaxy/blob/main/config/local.yaml)
 > Note: always available
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 * Prerequisite: `go >= 1.23`, `docker` ideally with [buildx](https://github.com/docker/buildx)
 * Start (Up)
@@ -94,11 +94,11 @@ make clean_db      # if needed
 
 ## GraphQL
 > Note: Check introspection for better experience
-### Schemas: <u>[internal/graphql/schemas](https://github.com/kalalannn/go-graphql_galaxy/tree/main/internal/graphql/schemas)</u>
+### Schemas: [internal/graphql/schemas](https://github.com/kalalannn/go-graphql_galaxy/tree/main/internal/graphql/schemas)
 
 ### Entities
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 ```graphql
 type Character {
@@ -144,7 +144,7 @@ type Secret {
 
 ### Queries
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
 
 ```graphql
 type Query {
@@ -184,7 +184,7 @@ type Query {
 
 ## Project structure
 <details>
-<summary> Click to expand </summary>
+<summary><a>Expand ... </a></summary>
 
 ```bash
 ├── cmd                                # entrypoints (main)
@@ -232,10 +232,10 @@ type Query {
 </details>
 
 ## Data structure
-### DB Table: `Character`, GORM model: <u>[Character](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/character.go)</u>, GraphQL schema: <u>[Character](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/character.graphql#L1-L13)</u>
+### DB Table: `Character`, GORM model: [Character](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/character.go), GraphQL schema: [Character](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/character.graphql#L1-L13)
 
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
     
 ```sql
     Column        |         Type         | NULLable?
@@ -256,9 +256,9 @@ Referenced by:
 ```
 </details>
 
-### DB Table: `Nemesis`, GORM model: <u>[Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/nemesis.go)</u>, GraphQL schema: <u>[Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/nemesis.graphql#L1-L7)</u>
+### DB Table: `Nemesis`, GORM model: [Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/nemesis.go), GraphQL schema: [Nemesis](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/nemesis.graphql#L1-L7)
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
     
 ```sql
     Column    |  Type   | NULLable?
@@ -275,9 +275,9 @@ Referenced by:
 ```
 </details>
 
-### DB Table: `Secret`, GORM model: <u>[Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/secret.go)</u>, GraphQL schema: <u>[Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/secret.graphql#L1-L5)</u>
+### DB Table: `Secret`, GORM model: [Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/gorm/entities/secret.go), GraphQL schema: [Secret](https://github.com/kalalannn/go-graphql_galaxy/blob/main/internal/graphql/schemas/secret.graphql#L1-L5)
 <details>
-<summary>Click to expand</summary>
+<summary><a>Expand ... </a></summary>
    
 ```sql
    Column    |  Type   | NULLable?
