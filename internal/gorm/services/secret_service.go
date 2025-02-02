@@ -36,7 +36,7 @@ func (s *SecretService) Secrets(preloads [][]string, orderBy string, limit, offs
 func (s *SecretService) Secret(id uint, preloads [][]string) (*entities.SecretEntity, error) {
 	db := database.PreloadDB(s.db, preloads)
 	var secret entities.SecretEntity
-	if err := db.Find(&secret, id).Error; err != nil {
+	if err := db.First(&secret, id).Error; err != nil {
 		return nil, err
 	}
 	return &secret, nil

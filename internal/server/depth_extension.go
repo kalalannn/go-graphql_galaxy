@@ -57,7 +57,7 @@ func (m *DepthExtension) MutateOperationContext(ctx context.Context, opCtx *grap
 	}
 
 	if gqlcontext.DFSMaxDepth(opCtx, m.MaxDepth) != nil {
-		err := gqlerror.Errorf("Max depth limit exceeded > %d", m.MaxDepth)
+		err := gqlerror.Errorf("Max depth limit exceeded >= %d", m.MaxDepth)
 		errcode.Set(err, errDepthLimit)
 		return err
 	}
