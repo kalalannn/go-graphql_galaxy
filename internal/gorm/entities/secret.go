@@ -17,9 +17,9 @@ type SecretEntity struct {
 
 /* Postgres schemas:
 =#> secret
-	id          | integer |                    | not null          | nextval('secrete_id_seq'::regclass)
-	secret_code | bigint  |                    | not null          |
-	nemesis_id  | integer |                    | not null          |
+	id          | integer | not null
+	secret_code | bigint  | not null
+	nemesis_id  | integer | not null
 
 Indexes:
 	"secrete_pkey" PRIMARY KEY, btree (id)

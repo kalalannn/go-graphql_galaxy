@@ -34,16 +34,16 @@ type CharacterEntity struct {
 
 /*
 =#> character
-	id               | integer                     | not null          | nextval('character_id_seq'::regclass)
-	name             | text                        | not null          |
-	gender           | text                        |                   |
-	ability          | text                        | not null          |
-	minimal_distance | numeric                     | not null          |
-	weight           | numeric                     |                   |
-	born             | timestamp without time zone | not null          |
-	in_space_since   | timestamp without time zone |                   |
-	beer_consumption | integer                     | not null          |
-	knows_the_answer | boolean                     | not null          |
+	id               | integer                     | not null
+	name             | text                        | not null
+	gender           | text                        |
+	ability          | text                        | not null
+	minimal_distance | numeric                     | not null
+	weight           | numeric                     |
+	born             | timestamp without time zone | not null
+	in_space_since   | timestamp without time zone |
+	beer_consumption | integer                     | not null
+	knows_the_answer | boolean                     | not null
 
 Indexes:
 	"character_pkey" PRIMARY KEY, btree (id)

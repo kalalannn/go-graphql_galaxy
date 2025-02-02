@@ -3,11 +3,15 @@ up_local:
 	docker-compose -f docker-compose-local.yaml up -d
 up_galaxy:
 	docker-compose -f docker-compose-galaxy.yaml up -d
+up_db_only:
+	docker-compose -f docker-compose-db-only.yaml up -d
 down_local:
 	docker-compose -f docker-compose-local.yaml down
 down_galaxy:
 	docker-compose -f docker-compose-galaxy.yaml down
-down: down_local down_galaxy
+down_db_only:
+	docker-compose -f docker-compose-db-only.yaml down
+down: down_local down_galaxy down_db_only
 
 ##! Build docker images
 _build_core_image:
@@ -18,6 +22,8 @@ build_app_image: _build_base_image
 	docker build --file=Dockerfile.app --tag=go-graphql_galaxy-app:latest .
 
 ##! Local app build & run
+mod_download:
+	go mod download
 _bin_exists:
 	mkdir -p bin
 local_build: _bin_exists

@@ -26,10 +26,10 @@ type NemesisEntity struct {
 
 /*
 =#> nemesis
-	is_alive     | boolean |                    | not null          |
-	years        | integer |                    |                   |
-	id           | integer |                    | not null          | nextval('nemesis_id_seq'::regclass)
-	character_id | integer |                    |                   |
+	is_alive     | boolean | not null
+	years        | integer |
+	id           | integer | not null
+	character_id | integer |
 
 Indexes:
 	"nemesis_pkey" PRIMARY KEY, btree (id)
